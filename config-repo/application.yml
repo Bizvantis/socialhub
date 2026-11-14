@@ -1,5 +1,10 @@
 
 eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
+    instance-id: ${spring.application.name}:${server.port}
+
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
@@ -9,3 +14,7 @@ management:
     web:
       exposure:
         include: health,info,prometheus,gateway
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:dev_only_secret_change_me_dev_only_secret_change_me_1234}

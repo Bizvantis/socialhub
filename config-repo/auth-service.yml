@@ -22,8 +22,15 @@ spring:
       port: 6379
       password: ${REDIS_PASSWORD:change_me}
 
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
 app:
   jwt:
-    secret: ${JWT_SECRET:dev_only_secret_change_me_dev_only_secret_change_me_1234}
     access-ttl-minutes: 15
     refresh-ttl-days: 7
