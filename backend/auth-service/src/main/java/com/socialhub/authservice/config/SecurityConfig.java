@@ -44,6 +44,7 @@ public class SecurityConfig {
                 // Health and information endpoints are public
                 .requestMatchers(
                     "/actuator/health",
+                    "/actuator/health/**",
                     "/actuator/info"
                 ).permitAll()
 
