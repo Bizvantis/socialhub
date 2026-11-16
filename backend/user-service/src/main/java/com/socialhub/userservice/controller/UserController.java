@@ -47,7 +47,7 @@ public class UserController {
             @PathVariable Long id,
             @RequestHeader("X-User-Id") Long viewerId) {
 
-        ProfileResponse profile = profileService.getById(id, viewerId);
+        ProfileResponse profile = profileService.getById(viewerId, id);
 
         return ResponseEntity.ok(
                 ApiResponse.success("Profile fetched successfully", profile));

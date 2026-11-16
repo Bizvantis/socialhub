@@ -1,3 +1,4 @@
+
 package com.socialhub.userservice.service;
 
 import com.socialhub.userservice.entity.Profile;
@@ -26,6 +27,9 @@ class ProfileServiceTest {
     @Mock
     private FollowRepository followRepository;
 
+    @Mock
+    private ProfileCache cache;
+
     @InjectMocks
     private ProfileService profileService;
 
@@ -39,7 +43,7 @@ class ProfileServiceTest {
 
         assertEquals("You cannot follow yourself", exception.getMessage());
 
-        verifyNoInteractions(profileRepository, followRepository);
+        verifyNoInteractions(profileRepository, followRepository, cache);
     }
 
     @Test
@@ -49,11 +53,15 @@ class ProfileServiceTest {
         profile.setUserId(1L);
         profile.setUsername("jagar");
 
+        Profile targetProfile = new Profile();
+        targetProfile.setUserId(2L);
+        targetProfile.setUsername("target");
+
         when(profileRepository.findById(1L))
                 .thenReturn(Optional.of(profile));
 
-        when(profileRepository.existsById(2L))
-                .thenReturn(true);
+        when(profileRepository.findById(2L))
+                .thenReturn(Optional.of(targetProfile));
 
         when(followRepository.existsByFollowerIdAndFolloweeId(1L, 2L))
                 .thenReturn(true);

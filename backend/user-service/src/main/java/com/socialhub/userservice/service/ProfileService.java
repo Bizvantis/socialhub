@@ -1,199 +1,153 @@
+
 package com.socialhub.userservice.service;
 
 import com.socialhub.userservice.dto.*;
 import com.socialhub.userservice.entity.*;
 import com.socialhub.userservice.exception.ApiException;
+import com.socialhub.userservice.mapper.ProfileMapper;
 import com.socialhub.userservice.repository.*;
-
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
-@RequiredArgsConstructor
 public class ProfileService {
 
-    private final ProfileRepository profileRepository;
-    private final FollowRepository followRepository;
+    private final ProfileRepository profiles;
+    private final FollowRepository follows;
+    private final ProfileCache cache;
 
-    // 1. Get my profile
+    public ProfileService(ProfileRepository profiles, FollowRepository follows, ProfileCache cache) {
+        this.profiles = profiles;
+        this.follows = follows;
+        this.cache = cache;
+    }
+
     @Transactional
     public ProfileResponse getMe(Long userId, String username) {
-        Profile profile = getOrCreate(userId, username);
-        return toResponse(profile, userId);
+        return ProfileMapper.toResponse(getOrCreate(userId, username), false);
     }
 
-    // 2. Get another user's profile
     @Transactional(readOnly = true)
-    public ProfileResponse getById(Long targetId, Long viewerId) {
+    public ProfileResponse getById(Long viewerId, Long id) {
+        ProfileResponse base = cache.get(id);
 
-        Profile profile = profileRepository.findById(targetId)
-                .orElseThrow(() -> new ApiException(
-                        HttpStatus.NOT_FOUND, "Profile not found"));
+        boolean followed = !viewerId.equals(id)
+                && follows.existsByFollowerIdAndFolloweeId(viewerId, id);
 
-        return toResponse(profile, viewerId);
+        return base.withFollowedByMe(followed);
     }
 
-    // 3. Update my profile
     @Transactional
-    public ProfileResponse update(
-            Long userId,
-            String username,
-            UpdateProfileRequest request) {
+    public ProfileResponse update(Long userId, String username, UpdateProfileRequest r) {
+        Profile p = getOrCreate(userId, username);
 
-        Profile profile = getOrCreate(userId, username);
+        if (r.displayName() != null) p.setDisplayName(r.displayName().trim());
+        if (r.bio() != null) p.setBio(r.bio().trim());
+        if (r.privateAccount() != null) p.setPrivateAccount(r.privateAccount());
 
-        if (request.displayName() != null) {
-            profile.setDisplayName(request.displayName().trim());
-        }
+        evictAfterCommit(userId);
 
-        if (request.bio() != null) {
-            profile.setBio(request.bio());
-        }
-
-        if (request.privateAccount() != null) {
-            profile.setPrivateAccount(request.privateAccount());
-        }
-
-        profileRepository.save(profile);
-
-        return toResponse(profile, userId);
+        return ProfileMapper.toResponse(p, false);
     }
 
-    // 4. Follow another user
     @Transactional
-    public void follow(Long followerId, String username, Long followeeId) {
-
-        if (followerId.equals(followeeId)) {
-            throw new ApiException(
-                    HttpStatus.BAD_REQUEST,
-                    "You cannot follow yourself");
+    public void follow(Long me, String myUsername, Long target) {
+        if (me.equals(target)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "You cannot follow yourself");
         }
 
-        // Ensure the follower has a profile
-        getOrCreate(followerId, username);
+        getOrCreate(me, myUsername);
+        find(target);
 
-        // Target profile must exist
-        if (!profileRepository.existsById(followeeId)) {
-            throw new ApiException(
-                    HttpStatus.NOT_FOUND,
-                    "User to follow not found");
-        }
-
-        // Avoid duplicate follow relationships
-        if (followRepository.existsByFollowerIdAndFolloweeId(
-                followerId, followeeId)) {
+        if (follows.existsByFollowerIdAndFolloweeId(me, target)) {
             return;
         }
 
-        Follow follow = new Follow(followerId, followeeId);
-        followRepository.save(follow);
+        follows.save(new Follow(me, target));
+        profiles.adjustFollowing(me, 1);
+        profiles.adjustFollowers(target, 1);
 
-        // Update both users' counts
-        profileRepository.adjustFollowing(followerId, 1);
-        profileRepository.adjustFollowers(followeeId, 1);
+        evictAfterCommit(me, target);
     }
 
-    // 5. Unfollow another user
     @Transactional
-    public void unfollow(Long followerId, Long followeeId) {
+    public void unfollow(Long me, Long target) {
+        int removed = follows.deleteEdge(me, target);
 
-        int deleted = followRepository.deleteEdge(followerId, followeeId);
+        if (removed > 0) {
+            profiles.adjustFollowing(me, -1);
+            profiles.adjustFollowers(target, -1);
 
-        if (deleted > 0) {
-            profileRepository.adjustFollowing(followerId, -1);
-            profileRepository.adjustFollowers(followeeId, -1);
+            evictAfterCommit(me, target);
         }
     }
 
-    // 6. Get followers
     @Transactional(readOnly = true)
-    public PageResponse<ProfileResponse> followers(
-            Long userId, Long viewerId, int page, int size) {
-
-        ensureProfileExists(userId);
-
-        Page<Profile> result = profileRepository.findFollowers(
-                userId, pageable(page, size));
+    public PageResponse<ProfileResponse> followers(Long id, Long viewerId, int page, int size) {
+        find(id);
 
         return PageResponse.from(
-                result.map(profile -> toResponse(profile, viewerId)));
-    }
-
-    // 7. Get following
-    @Transactional(readOnly = true)
-    public PageResponse<ProfileResponse> following(
-            Long userId, Long viewerId, int page, int size) {
-
-        ensureProfileExists(userId);
-
-        Page<Profile> result = profileRepository.findFollowing(
-                userId, pageable(page, size));
-
-        return PageResponse.from(
-                result.map(profile -> toResponse(profile, viewerId)));
-    }
-
-    // Helper: Create a profile when it doesn't exist
-    private Profile getOrCreate(Long userId, String username) {
-
-        return profileRepository.findById(userId).orElseGet(() -> {
-
-            Profile profile = new Profile();
-
-            profile.setUserId(userId);
-            profile.setUsername(username);
-            profile.setDisplayName(username);
-            profile.setPrivateAccount(false);
-            profile.setFollowerCount(0);
-            profile.setFollowingCount(0);
-
-            return profileRepository.save(profile);
-        });
-    }
-
-    // Helper: Check whether a profile exists
-    private void ensureProfileExists(Long userId) {
-
-        if (!profileRepository.existsById(userId)) {
-            throw new ApiException(
-                    HttpStatus.NOT_FOUND, "Profile not found");
-        }
-    }
-
-    // Helper: Convert database entity into API response
-    private ProfileResponse toResponse(Profile profile, Long viewerId) {
-
-        boolean followedByMe = viewerId != null
-                && !viewerId.equals(profile.getUserId())
-                && followRepository.existsByFollowerIdAndFolloweeId(
-                        viewerId, profile.getUserId());
-
-        return new ProfileResponse(
-                profile.getUserId(),
-                profile.getUsername(),
-                profile.getDisplayName(),
-                profile.getBio(),
-                profile.getAvatarMediaId(),
-                profile.isPrivateAccount(),
-                profile.getFollowerCount(),
-                profile.getFollowingCount(),
-                followedByMe
+                profiles.findFollowers(id, pageable(page, size))
+                        .map(p -> ProfileMapper.toResponse(
+                                p,
+                                follows.existsByFollowerIdAndFolloweeId(viewerId, p.getUserId())
+                        ))
         );
     }
 
-    // Helper: Pagination settings
+    @Transactional(readOnly = true)
+    public PageResponse<ProfileResponse> following(Long id, Long viewerId, int page, int size) {
+        find(id);
+
+        return PageResponse.from(
+                profiles.findFollowing(id, pageable(page, size))
+                        .map(p -> ProfileMapper.toResponse(
+                                p,
+                                follows.existsByFollowerIdAndFolloweeId(viewerId, p.getUserId())
+                        ))
+        );
+    }
+
+    private Profile find(Long id) {
+        return profiles.findById(id)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Profile not found"));
+    }
+
+    private Profile getOrCreate(Long userId, String username) {
+        return profiles.findById(userId).orElseGet(() -> {
+            Profile p = new Profile();
+            p.setUserId(userId);
+            p.setUsername(username);
+            p.setDisplayName(username);
+            return profiles.save(p);
+        });
+    }
+
     private Pageable pageable(int page, int size) {
+        return PageRequest.of(
+                Math.max(page, 0),
+                Math.min(Math.max(size, 1), 50)
+        );
+    }
 
-        if (page < 0 || size < 1 || size > 100) {
-            throw new ApiException(
-                    HttpStatus.BAD_REQUEST,
-                    "Invalid pagination parameters");
+    private void evictAfterCommit(Long... ids) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    for (Long id : ids) {
+                        cache.evict(id);
+                    }
+                }
+            });
+        } else {
+            for (Long id : ids) {
+                cache.evict(id);
+            }
         }
-
-        return PageRequest.of(page, size);
     }
 }
