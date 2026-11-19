@@ -1,6 +1,7 @@
 
 package com.socialhub.userservice.service;
 
+import com.socialhub.userservice.dto.ProfileResponse;
 import com.socialhub.userservice.entity.Profile;
 import com.socialhub.userservice.exception.ApiException;
 import com.socialhub.userservice.repository.FollowRepository;
@@ -30,6 +31,9 @@ class ProfileServiceTest {
     @Mock
     private ProfileCache cache;
 
+    @Mock
+    private FollowCache followCache;
+
     @InjectMocks
     private ProfileService profileService;
 
@@ -43,7 +47,60 @@ class ProfileServiceTest {
 
         assertEquals("You cannot follow yourself", exception.getMessage());
 
-        verifyNoInteractions(profileRepository, followRepository, cache);
+        verifyNoInteractions(profileRepository, followRepository, cache, followCache);
+    }
+
+    private static ProfileResponse response(long id) {
+        return new ProfileResponse(id, "u" + id, "U" + id, null, null, false, 0, 0, false);
+    }
+
+    @Test
+    void getByIdUsesCachedProfileAndCachedFollowEdge() {
+        when(cache.get(2L)).thenReturn(response(2L));
+        when(followCache.isFollowing(1L, 2L)).thenReturn(true);
+
+        ProfileResponse r = profileService.getById(1L, 2L);
+
+        assertTrue(r.followedByMe());
+        // The read path must not hit MySQL at all.
+        verifyNoInteractions(profileRepository, followRepository);
+    }
+
+    @Test
+    void viewingOwnProfileSkipsFollowCheck() {
+        when(cache.get(1L)).thenReturn(response(1L));
+
+        assertFalse(profileService.getById(1L, 1L).followedByMe());
+
+        verifyNoInteractions(followCache, followRepository);
+    }
+
+    @Test
+    void followEvictsBothProfilesAndTheFollowEdge() {
+        Profile me = new Profile();
+        me.setUserId(1L);
+        Profile target = new Profile();
+        target.setUserId(2L);
+        when(profileRepository.findById(1L)).thenReturn(Optional.of(me));
+        when(profileRepository.findById(2L)).thenReturn(Optional.of(target));
+        when(followRepository.existsByFollowerIdAndFolloweeId(1L, 2L)).thenReturn(false);
+
+        profileService.follow(1L, "jagar", 2L);
+
+        verify(cache).evict(1L);
+        verify(cache).evict(2L);
+        verify(followCache).evict(1L, 2L);
+    }
+
+    @Test
+    void unfollowEvictsFollowEdgeOnlyWhenSomethingWasRemoved() {
+        when(followRepository.deleteEdge(1L, 2L)).thenReturn(1, 0);
+
+        profileService.unfollow(1L, 2L);
+        verify(followCache).evict(1L, 2L);
+
+        profileService.unfollow(1L, 2L);
+        verify(followCache, times(1)).evict(1L, 2L);
     }
 
     @Test

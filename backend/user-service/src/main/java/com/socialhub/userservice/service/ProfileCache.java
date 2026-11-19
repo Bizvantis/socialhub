@@ -9,7 +9,6 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ProfileCache {
@@ -20,8 +19,10 @@ public class ProfileCache {
         this.profiles = profiles;
     }
 
+    // No @Transactional here: the transaction interceptor could wrap the cache
+    // interceptor and open a DB transaction even on a cache hit. findById already
+    // runs in Spring Data's own read-only transaction, which only happens on a miss.
     @Cacheable(cacheNames = "profile", key = "#id")
-    @Transactional(readOnly = true)
     public ProfileResponse get(Long id) {
         return profiles.findById(id)
                 .map(p -> ProfileMapper.toResponse(p, false))

@@ -19,11 +19,14 @@ public class ProfileService {
     private final ProfileRepository profiles;
     private final FollowRepository follows;
     private final ProfileCache cache;
+    private final FollowCache followCache;
 
-    public ProfileService(ProfileRepository profiles, FollowRepository follows, ProfileCache cache) {
+    public ProfileService(ProfileRepository profiles, FollowRepository follows,
+                          ProfileCache cache, FollowCache followCache) {
         this.profiles = profiles;
         this.follows = follows;
         this.cache = cache;
+        this.followCache = followCache;
     }
 
     @Transactional
@@ -31,12 +34,13 @@ public class ProfileService {
         return ProfileMapper.toResponse(getOrCreate(userId, username), false);
     }
 
-    @Transactional(readOnly = true)
+    // Deliberately NOT @Transactional: on a cache hit this method must not borrow
+    // a DB connection. Misses run inside the repository's own read-only transaction.
     public ProfileResponse getById(Long viewerId, Long id) {
         ProfileResponse base = cache.get(id);
 
         boolean followed = !viewerId.equals(id)
-                && follows.existsByFollowerIdAndFolloweeId(viewerId, id);
+                && followCache.isFollowing(viewerId, id);
 
         return base.withFollowedByMe(followed);
     }
@@ -72,6 +76,7 @@ public class ProfileService {
         profiles.adjustFollowers(target, 1);
 
         evictAfterCommit(me, target);
+        evictEdgeAfterCommit(me, target);
     }
 
     @Transactional
@@ -83,6 +88,7 @@ public class ProfileService {
             profiles.adjustFollowers(target, -1);
 
             evictAfterCommit(me, target);
+            evictEdgeAfterCommit(me, target);
         }
     }
 
@@ -135,19 +141,29 @@ public class ProfileService {
     }
 
     private void evictAfterCommit(Long... ids) {
+        afterCommit(() -> {
+            for (Long id : ids) {
+                cache.evict(id);
+            }
+        });
+    }
+
+    private void evictEdgeAfterCommit(Long follower, Long followee) {
+        afterCommit(() -> followCache.evict(follower, followee));
+    }
+
+    // Evict only once the DB change is committed, so a concurrent read
+    // cannot re-cache the old value from an uncommitted transaction.
+    private void afterCommit(Runnable action) {
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    for (Long id : ids) {
-                        cache.evict(id);
-                    }
+                    action.run();
                 }
             });
         } else {
-            for (Long id : ids) {
-                cache.evict(id);
-            }
+            action.run();
         }
     }
 }
