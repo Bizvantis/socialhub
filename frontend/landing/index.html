@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<!--
+  Step 33 - Semantic HTML.
+  Semantic elements (header, nav, main, section, article, footer) describe WHAT content is,
+  not how it looks. Screen readers, search engines and other developers can then understand
+  the page structure without reading any CSS.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Without this, phones render the page at desktop width and zoom out. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SocialHub - long videos, reels, stories and posts in one place.">
+  <title>SocialHub - Watch, share and connect</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Skip link: keyboard users jump straight past the navigation. -->
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <nav class="nav container" aria-label="Main">
+      <a class="brand" href="index.html" aria-label="SocialHub home">
+        <img src="assets/logo.svg" alt="" width="32" height="32">
+        <span>SocialHub</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#creators">For creators</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a class="btn btn-ghost" href="login.html">Log in</a>
+        <a class="btn btn-primary" href="register.html">Sign up</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Videos &middot; Reels &middot; Stories &middot; Posts</p>
+          <h1 id="hero-title">One place to <span class="gradient-text">watch, share</span> and connect.</h1>
+          <p class="lead">
+            Long-form videos from the creators you subscribe to, quick reels and photo posts from
+            friends, and stories that disappear after 24 hours.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-lg" href="register.html">Create your account</a>
+            <a class="btn btn-ghost btn-lg" href="#features">See what's inside</a>
+          </div>
+          <dl class="stats" aria-label="Platform highlights">
+            <div><dt>HLS</dt><dd>adaptive streaming</dd></div>
+            <div><dt>24h</dt><dd>stories</dd></div>
+            <div><dt>1 feed</dt><dd>videos + posts</dd></div>
+          </dl>
+        </div>
+
+        <!-- A purely decorative preview: aria-hidden keeps it out of the accessibility tree. -->
+        <div class="hero-preview" aria-hidden="true">
+          <div class="phone">
+            <div class="story-row">
+              <span class="ring"></span><span class="ring"></span><span class="ring seen"></span><span class="ring"></span>
+            </div>
+            <div class="card-preview tall"></div>
+            <div class="card-preview"></div>
+          </div>
+          <div class="player">
+            <div class="player-screen"><span class="play">&#9654;</span></div>
+            <div class="player-bar"><span></span></div>
+            <span class="badge-live">720p</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="section" aria-labelledby="features-title">
+      <div class="container">
+        <h2 id="features-title" class="section-title">Everything in one app</h2>
+        <p class="section-lead">Built like the big platforms, as a learning project: microservices, events and real-time updates.</p>
+        <div class="feature-grid">
+          <article class="feature">
+            <div class="feature-icon" aria-hidden="true">&#127909;</div>
+            <h3>Long-form video</h3>
+            <p>Upload once; we transcode to 360p and 720p HLS so playback adapts to the viewer's connection.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-icon" aria-hidden="true">&#127916;</div>
+            <h3>Reels &amp; posts</h3>
+            <p>Photos, carousels of up to ten images and vertical reels, with #hashtags and @mentions.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-icon" aria-hidden="true">&#9201;</div>
+            <h3>24-hour stories</h3>
+            <p>Share moments that expire after a day, and see exactly who watched them.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-icon" aria-hidden="true">&#128240;</div>
+            <h3>A feed that's yours</h3>
+            <p>Following feed in time order, or a home feed ranked by what you engage with.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-icon" aria-hidden="true">&#128269;</div>
+            <h3>Search that forgives typos</h3>
+            <p>Find videos, people, channels and hashtags as you type, with filters and sorting.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-icon" aria-hidden="true">&#128276;</div>
+            <h3>Live notifications</h3>
+            <p>Follows, likes, comments and new uploads arrive instantly, with optional email.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="section section-alt" aria-labelledby="how-title">
+      <div class="container">
+        <h2 id="how-title" class="section-title">How it works</h2>
+        <ol class="steps">
+          <li><span class="step-num">1</span><h3>Create an account</h3><p>Sign up in seconds, pick a username and set up your profile.</p></li>
+          <li><span class="step-num">2</span><h3>Follow &amp; subscribe</h3><p>Follow friends for posts and stories, subscribe to channels for videos.</p></li>
+          <li><span class="step-num">3</span><h3>Share your own</h3><p>Upload straight from your device; large files go directly to cloud storage.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="creators" class="section" aria-labelledby="creators-title">
+      <div class="container cta">
+        <div>
+          <h2 id="creators-title">Start your channel today</h2>
+          <p>Playlists, subscriber counts, watch history and analytics-ready view counts from day one.</p>
+        </div>
+        <a class="btn btn-primary btn-lg" href="register.html">Get started - it's free</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <p>&copy; <span id="year">2026</span> SocialHub. A portfolio project.</p>
+      <nav aria-label="Footer">
+        <ul class="footer-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="login.html">Log in</a></li>
+          <li><a href="register.html">Sign up</a></li>
+        </ul>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="js/site.js" defer></script>
+</body>
+</html>

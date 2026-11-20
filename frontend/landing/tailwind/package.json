@@ -1,0 +1,13 @@
+{
+  "name": "socialhub-landing-tailwind",
+  "private": true,
+  "description": "Step 35: the landing page rebuilt with Tailwind CSS utility classes",
+  "scripts": {
+    "build": "tailwindcss -i ./src/input.css -o ./dist/tailwind.css --minify",
+    "dev": "tailwindcss -i ./src/input.css -o ./dist/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.0",
+    "tailwindcss": "^4.1.0"
+  }
+}

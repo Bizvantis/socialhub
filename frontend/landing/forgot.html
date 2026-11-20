@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset password - SocialHub</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="auth-page">
+  <main class="auth-card" id="main">
+    <a class="brand brand-center" href="index.html">
+      <img src="assets/logo.svg" alt="" width="40" height="40"><span>SocialHub</span>
+    </a>
+    <h1>Forgot your password?</h1>
+    <p class="muted">Enter your email and we will send you a reset link.</p>
+    <form id="forgot-form" class="form" novalidate>
+      <div class="field">
+        <label for="forgot-email">Email</label>
+        <input id="forgot-email" name="email" type="email" autocomplete="email" required>
+        <p class="field-error" id="forgot-email-error" role="alert"></p>
+      </div>
+      <p class="form-success" id="form-success" role="status" hidden></p>
+      <p class="form-error" id="form-error" role="alert" hidden></p>
+      <button class="btn btn-primary btn-block" type="submit">Send reset link</button>
+    </form>
+    <p class="muted center"><a href="login.html">Back to log in</a></p>
+  </main>
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>

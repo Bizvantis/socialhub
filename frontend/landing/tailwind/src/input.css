@@ -1,0 +1,34 @@
+/*
+  Step 35 - Tailwind CSS v4.
+  Utility-first: instead of writing .feature { padding: 1.5rem; border-radius: ... } in a stylesheet,
+  the HTML composes small single-purpose classes (p-6 rounded-2xl border ...). The build scans
+  ../index.html and emits ONLY the classes actually used, so the CSS stays tiny.
+*/
+@import "tailwindcss";
+@source "../index.html";
+
+/* Design tokens -> utilities: --color-brand-500 becomes bg-brand-500, text-brand-500, etc. */
+@theme {
+  --color-brand-500: #ec4899;
+  --color-brand-600: #db2777;
+  --color-violet-brand: #7c3aed;
+  --color-orange-brand: #f97316;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/*
+  Reusable classes when a utility combination repeats a lot. In Tailwind v4 these are declared
+  with @utility (not @layer components), which also lets them be combined with variants and @apply.
+*/
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 font-semibold transition
+         hover:-translate-y-px focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-500;
+}
+
+@utility btn-primary {
+  @apply btn text-white bg-linear-to-r from-violet-brand via-brand-500 to-orange-brand shadow-lg shadow-brand-500/30;
+}
+
+@utility btn-ghost {
+  @apply btn border border-zinc-200 text-zinc-900 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-900;
+}

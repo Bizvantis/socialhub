@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<!--
+  Step 33 - Forms: <form>, <label for>, input types, required/minlength, autocomplete hints.
+  Step 36 - js/auth.js adds validation feedback and calls the API with fetch + async/await.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log in - SocialHub</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="auth-page">
+  <main class="auth-card" id="main">
+    <a class="brand brand-center" href="index.html">
+      <img src="assets/logo.svg" alt="" width="40" height="40"><span>SocialHub</span>
+    </a>
+    <h1>Welcome back</h1>
+    <p class="muted">Log in to see your feed.</p>
+
+    <!-- novalidate: we show our own error messages instead of the browser's bubbles. -->
+    <form id="login-form" class="form" novalidate>
+      <div class="field">
+        <label for="login-id">Email or username</label>
+        <input id="login-id" name="emailOrUsername" type="text" autocomplete="username" required>
+        <p class="field-error" id="login-id-error" role="alert"></p>
+      </div>
+      <div class="field">
+        <label for="login-password">Password</label>
+        <div class="password-wrap">
+          <input id="login-password" name="password" type="password" autocomplete="current-password" required minlength="8">
+          <button type="button" class="toggle-password" aria-label="Show password" data-target="login-password">Show</button>
+        </div>
+        <p class="field-error" id="login-password-error" role="alert"></p>
+      </div>
+      <p class="form-error" id="form-error" role="alert" hidden></p>
+      <button class="btn btn-primary btn-block" type="submit">Log in</button>
+    </form>
+
+    <p class="muted center"><a href="forgot.html">Forgot password?</a></p>
+    <p class="muted center">New here? <a href="register.html">Create an account</a></p>
+  </main>
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>
