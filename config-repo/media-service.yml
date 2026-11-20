@@ -24,5 +24,7 @@ app:
     secret-key: ${S3_SECRET_KEY:socialhub_dev_s3_secret}
     path-style: ${S3_PATH_STYLE:true}
     create-bucket: ${S3_CREATE_BUCKET:true}
+    # Origins allowed to PUT/GET objects directly from the browser (bucket CORS policy).
+    cors-origins: ${S3_CORS_ORIGINS:http://localhost:5173,http://localhost:5500,http://localhost}
     upload-url-ttl: 15m
     download-url-ttl: 1h

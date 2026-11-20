@@ -14,4 +14,6 @@ public class RefreshToken {
     @Column(name = "family_id", nullable = false) private String familyId;
     @Column(name = "expires_at", nullable = false) private Instant expiresAt;
     @Column(nullable = false) private boolean revoked;
+    /** Set when the token was rotated (not when revoked by logout/suspension): drives the reuse grace window. */
+    @Column(name = "replaced_at") private Instant replacedAt;
 }

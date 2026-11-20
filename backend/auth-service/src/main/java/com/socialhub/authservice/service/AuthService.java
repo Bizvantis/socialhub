@@ -38,6 +38,7 @@ public class AuthService {
     private final AccountModeration accounts;
 
     private final SecureRandom random = new SecureRandom();
+    private static final java.time.Duration REUSE_GRACE = java.time.Duration.ofSeconds(30);
 
     public AuthService(
             UserRepository users,
@@ -147,13 +148,20 @@ public class AuthService {
             ));
 
         if (old.isRevoked()) {
-
-            refreshTokens.revokeFamily(old.getFamilyId());
-
-            throw new ApiException(
-                HttpStatus.UNAUTHORIZED,
-                "Refresh token reuse detected"
-            );
+            // Reuse grace window: a token rotated a few seconds ago is most likely a benign retry
+            // (the browser navigated away before storing the new token, two tabs refreshed at once).
+            // Only if the family is still alive, so a logout or theft response is never undone.
+            boolean benignRetry = old.getReplacedAt() != null
+                    && old.getReplacedAt().isAfter(Instant.now().minus(REUSE_GRACE))
+                    && refreshTokens.existsByFamilyIdAndRevokedFalse(old.getFamilyId());
+            if (!benignRetry) {
+                // Real reuse of an old token = likely theft: kill the whole session family.
+                refreshTokens.revokeFamily(old.getFamilyId());
+                throw new ApiException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Refresh token reuse detected"
+                );
+            }
         }
 
         if (old.getExpiresAt().isBefore(Instant.now())) {
@@ -176,8 +184,11 @@ public class AuthService {
             );
         }
 
-        // Revoke old token
-        old.setRevoked(true);
+        // Revoke old token, remembering it was ROTATED (not logged out) for the grace window
+        if (!old.isRevoked()) {
+            old.setRevoked(true);
+            old.setReplacedAt(Instant.now());
+        }
 
         // Generate new tokens in the same family
         return issueTokens(u, old.getFamilyId());

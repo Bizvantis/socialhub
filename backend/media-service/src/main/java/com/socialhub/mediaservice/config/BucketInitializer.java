@@ -7,7 +7,10 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CORSConfiguration;
+import software.amazon.awssdk.services.s3.model.CORSRule;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.PutBucketCorsRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.model.S3Exception;
@@ -40,6 +43,29 @@ public class BucketInitializer implements ApplicationRunner {
         } catch (S3Exception e) {
             if (e.statusCode() == 404) create();
             else log.warn("Could not check bucket {}: {}", props.bucket(), e.getMessage());
+        }
+        applyCors();
+    }
+
+    /**
+     * Uploads go browser -> S3 directly (pre-signed PUT), so the browser first sends a CORS
+     * preflight to the bucket. Allow only the web app's origins, only GET/PUT/HEAD.
+     */
+    private void applyCors() {
+        if (props.corsOrigins().isEmpty()) return;
+        try {
+            s3.putBucketCors(PutBucketCorsRequest.builder().bucket(props.bucket())
+                    .corsConfiguration(CORSConfiguration.builder().corsRules(CORSRule.builder()
+                            .allowedOrigins(props.corsOrigins())
+                            .allowedMethods("GET", "PUT", "HEAD")
+                            .allowedHeaders("*")
+                            .exposeHeaders("ETag")
+                            .maxAgeSeconds(3000)
+                            .build()).build())
+                    .build());
+            log.info("Bucket {} CORS allows {}", props.bucket(), props.corsOrigins());
+        } catch (S3Exception e) {
+            log.warn("Could not set CORS on bucket {}: {}", props.bucket(), e.getMessage());
         }
     }
 

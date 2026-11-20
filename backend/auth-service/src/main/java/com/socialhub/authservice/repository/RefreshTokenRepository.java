@@ -13,6 +13,8 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     @Query("update RefreshToken t set t.revoked = true where t.familyId = :familyId")
     void revokeFamily(String familyId);
 
+    boolean existsByFamilyIdAndRevokedFalse(String familyId);
+
     /** Sign the user out everywhere (password reset, suspension). */
     @Modifying
     @Query("update RefreshToken t set t.revoked = true where t.userId = :userId and t.revoked = false")

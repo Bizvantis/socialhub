@@ -23,9 +23,12 @@ public record StorageProperties(
         String secretKey,
         boolean pathStyle,
         Duration uploadUrlTtl,
-        Duration downloadUrlTtl) {
+        Duration downloadUrlTtl,
+        java.util.List<String> corsOrigins) {
 
+    /** Browsers PUT files straight to S3, so the bucket must allow the web app's origin (CORS). */
     public StorageProperties {
+        if (corsOrigins == null) corsOrigins = java.util.List.of();
         if (region == null || region.isBlank()) region = "ap-south-1";
         if (uploadUrlTtl == null) uploadUrlTtl = Duration.ofMinutes(15);
         if (downloadUrlTtl == null) downloadUrlTtl = Duration.ofHours(1);

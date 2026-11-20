@@ -38,7 +38,7 @@ class MediaServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        var props = new StorageProperties("bucket", null, null, null, null, null, true, null, null);
+        var props = new StorageProperties("bucket", null, null, null, null, null, true, null, null, null);
         service = new MediaService(repo, storage, props, outbox);
         lenient().when(storage.presignDownload(anyString())).thenReturn(URI.create("http://s3/get").toURL());
     }
