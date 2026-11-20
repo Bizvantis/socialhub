@@ -108,6 +108,6 @@ $COMPOSE ps --format 'table {{.Name}}\t{{.Status}}'
 
 echo "== daily story refresh (stories expire after 24 h)"
 CRON="17 6 * * * cd $APP/tools/seed && SEED_GUEST_PASSWORD=\$(grep ^DEMO_PASSWORD= $APP/.env | cut -d= -f2) python3 seed_demo.py --base https://$SITE --stories-only >> $APP/stories.log 2>&1"
-( crontab -l 2>/dev/null | grep -v 'seed_demo.py' ; echo "$CRON" ) | crontab -
+{ crontab -l 2>/dev/null | grep -v 'seed_demo.py' || true; echo "$CRON"; } | crontab -   # no crontab yet is fine
 
 echo "done: https://$SITE"
