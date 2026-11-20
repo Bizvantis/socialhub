@@ -3,3 +3,6 @@
 Dockerfile text eol=lf
 Jenkinsfile text eol=lf
 infra/nginx/*.conf text eol=lf
+*.template text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
