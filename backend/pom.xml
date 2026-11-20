@@ -26,5 +26,6 @@
         <module>user-service</module>
         <module>media-service</module>
         <module>video-service</module>
+        <module>post-service</module>
     </modules>
 </project>

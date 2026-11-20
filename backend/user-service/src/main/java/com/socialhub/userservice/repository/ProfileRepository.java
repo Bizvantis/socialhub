@@ -18,6 +18,9 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
     @Query("UPDATE Profile p SET p.followingCount = p.followingCount + :d WHERE p.userId = :id")
     int adjustFollowing(@Param("id") Long id, @Param("d") int delta);
 
+    @Query("SELECT p.userId FROM Profile p WHERE LOWER(p.username) = LOWER(:username)")
+    java.util.Optional<Long> findIdByUsernameIgnoreCase(@Param("username") String username);
+
     // Find users who follow this profile
     @Query("SELECT p FROM Profile p JOIN Follow f ON f.followerId = p.userId " +
            "WHERE f.followeeId = :id ORDER BY f.createdAt DESC, p.userId DESC")

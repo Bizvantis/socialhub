@@ -1,2 +1,3 @@
 com.socialhub.common.web.CommonWebAutoConfiguration
 com.socialhub.common.event.EventingAutoConfiguration
+com.socialhub.common.client.InternalClientAutoConfiguration
