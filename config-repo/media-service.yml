@@ -1,0 +1,25 @@
+server:
+  port: 8083
+
+spring:
+  datasource:
+    url: jdbc:mysql://${app.mysql.host}:3306/media_db
+    username: media_user
+    password: ${MEDIA_DB_PASSWORD:media_dev_pw}
+  flyway:
+    enabled: true
+
+app:
+  storage:
+    bucket: ${MEDIA_BUCKET:socialhub-media}
+    region: ${AWS_REGION:ap-south-1}
+    # Local SeaweedFS. In production leave endpoint/public-endpoint/keys empty to use AWS S3
+    # with the EC2 instance role (see docs/runbooks/aws.md).
+    endpoint: ${S3_ENDPOINT:http://localhost:8333}
+    public-endpoint: ${S3_PUBLIC_ENDPOINT:http://localhost:8333}
+    access-key: ${S3_ACCESS_KEY:socialhub}
+    secret-key: ${S3_SECRET_KEY:socialhub_dev_s3_secret}
+    path-style: ${S3_PATH_STYLE:true}
+    create-bucket: ${S3_CREATE_BUCKET:true}
+    upload-url-ttl: 15m
+    download-url-ttl: 1h

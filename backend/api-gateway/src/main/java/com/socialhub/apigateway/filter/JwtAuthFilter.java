@@ -1,6 +1,6 @@
-
 package com.socialhub.apigateway.filter;
 
+import com.socialhub.apigateway.config.GatewayProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -22,122 +22,94 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+/**
+ * Edge authentication.
+ *
+ * 1. Strips any identity headers the client sent (they would otherwise be trusted downstream).
+ * 2. Blocks /internal/**: service-to-service APIs are never reachable from outside.
+ * 3. Validates the JWT and forwards X-User-Id / X-Username / X-User-Roles.
+ *
+ * Route classes:
+ *  - public:        /api/auth/** (login, register, refresh) and health
+ *  - optional-auth: GET on configured public prefixes (anonymous browsing; a token, if sent,
+ *                   must still be valid)
+ *  - protected:     everything else requires a valid token
+ */
 @Component
 public class JwtAuthFilter implements GlobalFilter, Ordered {
 
     private final SecretKey signingKey;
+    private final List<String> publicGetPrefixes;
 
-    public JwtAuthFilter(
-            @Value("${app.jwt.secret}") String secret) {
-        this.signingKey = Keys.hmacShaKeyFor(
-                secret.getBytes(StandardCharsets.UTF_8)
-        );
+    public JwtAuthFilter(@Value("${app.jwt.secret}") String secret, GatewayProperties props) {
+        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.publicGetPrefixes = props.publicGetPrefixes();
     }
 
     @Override
-    public Mono<Void> filter(
-            ServerWebExchange exchange,
-            GatewayFilterChain chain) {
-
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
-
-        // Remove identity headers supplied by clients.
-        ServerHttpRequest.Builder requestBuilder = request.mutate()
-                .headers(headers -> {
-                    headers.remove("X-User-Id");
-                    headers.remove("X-Username");
-                    headers.remove("X-User-Roles");
-                });
-
         String path = request.getURI().getPath();
         HttpMethod method = request.getMethod();
 
-        // Public endpoints.
-        boolean publicRoute =
-                method == HttpMethod.OPTIONS
-                || (path.startsWith("/api/auth/")
-                    && (method == HttpMethod.POST
-                        || method == HttpMethod.GET))
+        if (path.startsWith("/internal/") || path.contains("/internal/")) {
+            return reject(exchange, HttpStatus.NOT_FOUND, "Not found");
+        }
+
+        ServerHttpRequest.Builder builder = request.mutate().headers(h -> {
+            h.remove("X-User-Id");
+            h.remove("X-Username");
+            h.remove("X-User-Roles");
+        });
+
+        boolean publicRoute = method == HttpMethod.OPTIONS
+                || (path.startsWith("/api/auth/") && (method == HttpMethod.POST || method == HttpMethod.GET))
                 || path.equals("/actuator/health");
-
         if (publicRoute) {
-            return chain.filter(
-                    exchange.mutate()
-                            .request(requestBuilder.build())
-                            .build()
-            );
+            return chain.filter(exchange.mutate().request(builder.build()).build());
         }
 
-        // Protected endpoints require a Bearer token.
-        String authHeader = request.getHeaders()
-                .getFirst(HttpHeaders.AUTHORIZATION);
+        boolean optionalAuth = method == HttpMethod.GET
+                && publicGetPrefixes.stream().anyMatch(path::startsWith);
 
+        String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return unauthorized(exchange, "Missing or invalid token");
+            if (optionalAuth) {
+                return chain.filter(exchange.mutate().request(builder.build()).build());
+            }
+            return reject(exchange, HttpStatus.UNAUTHORIZED, "Missing or invalid token");
         }
-
-        String token = authHeader.substring(7);
 
         try {
-            Claims claims = Jwts.parser()
-                    .verifyWith(signingKey)
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
+            Claims claims = Jwts.parser().verifyWith(signingKey).build()
+                    .parseSignedClaims(authHeader.substring(7)).getPayload();
 
             String userId = claims.getSubject();
             String username = claims.get("username", String.class);
-
-            Object rolesClaim = claims.get("roles");
-
-            final String roles;
-
-            if (rolesClaim instanceof List<?> roleList) {
-                roles = String.join(",", roleList.stream()
-                        .map(Object::toString)
-                        .toList());
-            } else {
-                roles = "";
-            }
-
+            String roles = claims.get("roles") instanceof List<?> list
+                    ? String.join(",", list.stream().map(Object::toString).toList())
+                    : "";
             if (userId == null || username == null) {
-                return unauthorized(exchange, "Invalid token claims");
+                return reject(exchange, HttpStatus.UNAUTHORIZED, "Invalid token claims");
             }
 
-            requestBuilder.headers(headers -> {
-                headers.set("X-User-Id", userId);
-                headers.set("X-Username", username);
-                headers.set("X-User-Roles", roles);
+            builder.headers(h -> {
+                h.set("X-User-Id", userId);
+                h.set("X-Username", username);
+                h.set("X-User-Roles", roles);
             });
-
-            return chain.filter(
-                    exchange.mutate()
-                            .request(requestBuilder.build())
-                            .build()
-            );
-
+            return chain.filter(exchange.mutate().request(builder.build()).build());
         } catch (JwtException | IllegalArgumentException ex) {
-            return unauthorized(exchange, "Invalid or expired token");
+            return reject(exchange, HttpStatus.UNAUTHORIZED, "Invalid or expired token");
         }
     }
 
-    private Mono<Void> unauthorized(
-            ServerWebExchange exchange,
-            String message) {
-
-        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-        exchange.getResponse().getHeaders()
-                .setContentType(MediaType.APPLICATION_JSON);
-
-        String body = """
-                {"success":false,"message":"%s"}
-                """.formatted(message);
-
-        return exchange.getResponse().writeWith(
-                Mono.just(exchange.getResponse()
-                        .bufferFactory()
-                        .wrap(body.getBytes(StandardCharsets.UTF_8)))
-        );
+    private Mono<Void> reject(ServerWebExchange exchange, HttpStatus status, String message) {
+        exchange.getResponse().setStatusCode(status);
+        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+        byte[] body = """
+                {"success":false,"message":"%s","data":null}""".formatted(message).getBytes(StandardCharsets.UTF_8);
+        return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(body)));
     }
 
     @Override

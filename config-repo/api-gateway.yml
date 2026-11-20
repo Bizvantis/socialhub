@@ -1,11 +1,10 @@
-
 server:
   port: 8080
 
 spring:
   data:
     redis:
-      host: localhost
+      host: ${app.redis.host}
       port: 6379
       password: ${REDIS_PASSWORD:change_me}
 
@@ -24,17 +23,22 @@ spring:
                   - "http://localhost:5173"
                   - "http://localhost:3000"
                   - "http://127.0.0.1:5500"
-                allowedMethods:
-                  - GET
-                  - POST
-                  - PUT
-                  - DELETE
-                  - OPTIONS
+                  - "http://localhost:5500"
+                allowedMethods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
                 allowedHeaders: "*"
                 allowCredentials: true
 
+          # Every route gets a per-user token bucket (falls back to per-IP when anonymous).
+          default-filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@userKeyResolver}"
+
           routes:
-            # Authentication Service
+            # Stricter per-IP limit on top of the default: slows down password guessing.
             - id: auth-service
               uri: lb://auth-service
               predicates:
@@ -47,15 +51,58 @@ spring:
                     redis-rate-limiter.requestedTokens: 1
                     key-resolver: "#{@ipKeyResolver}"
 
-            # User Service
             - id: user-service
               uri: lb://user-service
               predicates:
                 - Path=/api/users/**
-              filters:
-                - name: RequestRateLimiter
-                  args:
-                    redis-rate-limiter.replenishRate: 20
-                    redis-rate-limiter.burstCapacity: 40
-                    redis-rate-limiter.requestedTokens: 1
-                    key-resolver: "#{@userKeyResolver}"
+
+            - id: media-service
+              uri: lb://media-service
+              predicates:
+                - Path=/api/media/**
+
+            - id: video-service
+              uri: lb://video-service
+              predicates:
+                - Path=/api/channels/**,/api/videos/**,/api/playlists/**,/api/history/**,/api/watch-later/**
+
+            - id: post-service
+              uri: lb://post-service
+              predicates:
+                - Path=/api/posts/**,/api/stories/**,/api/hashtags/**
+
+            - id: engagement-service
+              uri: lb://engagement-service
+              predicates:
+                - Path=/api/comments/**,/api/reactions/**,/api/bookmarks/**,/api/shares/**
+
+            - id: feed-service
+              uri: lb://feed-service
+              predicates:
+                - Path=/api/feed/**
+
+            - id: search-service
+              uri: lb://search-service
+              predicates:
+                - Path=/api/search/**
+
+            - id: notification-service
+              uri: lb://notification-service
+              predicates:
+                - Path=/api/notifications/**
+
+            - id: moderation-service
+              uri: lb://moderation-service
+              predicates:
+                - Path=/api/reports/**,/api/admin/**
+
+app:
+  gateway:
+    # GET requests to these prefixes work without a token (anonymous browsing).
+    # If a token IS sent it is still validated and the identity forwarded.
+    public-get-prefixes:
+      - /api/media/
+      - /api/videos/
+      - /api/channels/
+      - /api/search/
+      - /api/hashtags/
