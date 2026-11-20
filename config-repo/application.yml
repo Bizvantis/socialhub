@@ -29,6 +29,9 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+    properties:
+      # Load lazy collections for up to 50 parents per query (avoids N+1 on lists).
+      hibernate.default_batch_fetch_size: 50
 
   # Used only by services that have Kafka on the classpath.
   kafka:

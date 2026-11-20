@@ -8,6 +8,9 @@ spring:
     password: ${MEDIA_DB_PASSWORD:media_dev_pw}
   flyway:
     enabled: true
+  kafka:
+    consumer:
+      group-id: media-service
 
 app:
   storage:

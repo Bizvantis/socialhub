@@ -1,0 +1,24 @@
+server:
+  port: 8084
+
+spring:
+  datasource:
+    url: jdbc:mysql://${app.mysql.host}:3306/video_db
+    username: video_user
+    password: ${VIDEO_DB_PASSWORD:video_dev_pw}
+  flyway:
+    enabled: true
+  data:
+    redis:
+      host: ${app.redis.host}
+      port: 6379
+      password: ${REDIS_PASSWORD:change_me}
+  kafka:
+    consumer:
+      group-id: video-service
+
+app:
+  views:
+    # A viewer counts once per video per window (anti-inflation).
+    dedupe-window: 30m
+    flush-ms: 5000

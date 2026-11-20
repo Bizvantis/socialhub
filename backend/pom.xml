@@ -25,5 +25,6 @@
         <module>auth-service</module>
         <module>user-service</module>
         <module>media-service</module>
+        <module>video-service</module>
     </modules>
 </project>

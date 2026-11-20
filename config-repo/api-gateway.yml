@@ -104,5 +104,12 @@ app:
       - /api/media/
       - /api/videos/
       - /api/channels/
+      - /api/playlists/
       - /api/search/
       - /api/hashtags/
+      - /api/comments/
+      - /api/reactions/
+    # POSTs that also work anonymously (view counting from logged-out players).
+    optional-auth-post-paths:
+      - /api/videos/{id}/views
+      - /api/media/batch

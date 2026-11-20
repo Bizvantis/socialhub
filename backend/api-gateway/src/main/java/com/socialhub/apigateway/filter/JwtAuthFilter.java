@@ -13,7 +13,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.server.PathContainer;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.web.util.pattern.PathPattern;
+import org.springframework.web.util.pattern.PathPatternParser;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -41,9 +44,13 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     private final SecretKey signingKey;
     private final List<String> publicGetPrefixes;
 
+    private final List<PathPattern> optionalAuthPost;
+
     public JwtAuthFilter(@Value("${app.jwt.secret}") String secret, GatewayProperties props) {
         this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.publicGetPrefixes = props.publicGetPrefixes();
+        PathPatternParser parser = new PathPatternParser();
+        this.optionalAuthPost = props.optionalAuthPostPaths().stream().map(parser::parse).toList();
     }
 
     @Override
@@ -69,8 +76,9 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange.mutate().request(builder.build()).build());
         }
 
-        boolean optionalAuth = method == HttpMethod.GET
-                && publicGetPrefixes.stream().anyMatch(path::startsWith);
+        boolean optionalAuth = (method == HttpMethod.GET && isPublicGet(path))
+                || (method == HttpMethod.POST && optionalAuthPost.stream()
+                        .anyMatch(p -> p.matches(PathContainer.parsePath(path))));
 
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -102,6 +110,15 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         } catch (JwtException | IllegalArgumentException ex) {
             return reject(exchange, HttpStatus.UNAUTHORIZED, "Invalid or expired token");
         }
+    }
+
+    /** "/api/videos/" matches /api/videos, /api/videos/ and /api/videos/42 but not /api/videosX. */
+    private boolean isPublicGet(String path) {
+        for (String p : publicGetPrefixes) {
+            String base = p.endsWith("/") ? p.substring(0, p.length() - 1) : p;
+            if (path.equals(base) || path.startsWith(base + "/")) return true;
+        }
+        return false;
     }
 
     private Mono<Void> reject(ServerWebExchange exchange, HttpStatus status, String message) {
