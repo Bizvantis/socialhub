@@ -16,8 +16,9 @@ const statsCaches = {
 function useBatched(cache, ids) {
   const key = ids.filter((x) => x != null).join(",");
   useEffect(() => { cache.request(key ? key.split(",").map(Number) : []); }, [cache, key]);
-  // useSyncExternalStore: re-render when the cache notifies, read a stable snapshot string.
-  useSyncExternalStore(cache.subscribe, () => key.split(",").map((id) => (cache.get(Number(id)) === undefined ? 0 : 1)).join(""));
+  // useSyncExternalStore: subscribe to the cache and re-render whenever its version changes
+  // (new entries arriving AND updated values, e.g. a like count after an optimistic update).
+  useSyncExternalStore(cache.subscribe, cache.version);
   return (id) => cache.get(id);
 }
 
@@ -25,7 +26,7 @@ export const useUsers = (ids) => useBatched(usersCache, ids);
 export const useMedia = (ids) => useBatched(mediaCache, ids);
 export function useStats(type, ids) {
   const cache = statsCaches[type];
-  return { get: useBatched(cache, ids), set: (id, v) => cache.set(id, v) };
+  return { get: useBatched(cache, ids), set: (id, v) => cache.set(id, v), latest: (id) => cache.get(id) };
 }
 
 // ---- generic data hooks ------------------------------------------------------------

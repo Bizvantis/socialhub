@@ -9,4 +9,6 @@ export default defineConfig(({ command }) => ({
   plugins: [react(), tailwindcss()],
   base: command === "build" ? "/app/" : "/",
   server: { port: 5173, strictPort: true },
+  // hls.js (~600 kB) is loaded lazily only on pages that play video, so it never blocks first paint.
+  build: { chunkSizeWarningLimit: 700 },
 }));

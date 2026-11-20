@@ -70,12 +70,17 @@ export function ActionBar({ type, id, onComment }) {
   const stats = useStats(type, [id]);
   const s = stats.get(id);
 
+  /**
+   * Optimistic update: show the result immediately, then reconcile with the server's answer
+   * (or roll back on failure). Both callbacks receive the LATEST cached state, not the state
+   * captured at render time, so quick successive clicks never overwrite each other.
+   */
   async function run(optimistic, request) {
     if (!user) { navigate("/login"); return; }
-    const before = s;
-    stats.set(id, optimistic);
+    const before = stats.latest(id);
+    stats.set(id, optimistic(before));
     try {
-      stats.set(id, await request());
+      stats.set(id, await request(before));
     } catch {
       stats.set(id, before); // roll back on failure
     }
@@ -84,30 +89,36 @@ export function ActionBar({ type, id, onComment }) {
   if (!s) return <div className="h-9" />;
   const liked = s.myReaction === "LIKE";
   const disliked = s.myReaction === "DISLIKE";
+  const react = (kind) => run(
+    (c) => {
+      const on = c.myReaction === kind;
+      const next = { ...c, myReaction: on ? null : kind };
+      if (kind === "LIKE") { next.likes = c.likes + (on ? -1 : 1); if (c.myReaction === "DISLIKE") next.dislikes = c.dislikes - 1; }
+      else { next.dislikes = c.dislikes + (on ? -1 : 1); if (c.myReaction === "LIKE") next.likes = c.likes - 1; }
+      return next;
+    },
+    (c) => (c.myReaction === kind ? Engagement.unreact(type, id) : Engagement.react(type, id, kind)),
+  );
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <button className={`btn-secondary ${liked ? "!bg-brand-500/15 !text-brand-600" : ""}`} aria-pressed={liked}
-        onClick={() => run({ ...s, myReaction: liked ? null : "LIKE", likes: s.likes + (liked ? -1 : 1), dislikes: s.dislikes - (disliked ? 1 : 0) },
-          () => (liked ? Engagement.unreact(type, id) : Engagement.react(type, id, "LIKE")))}>
+      <button className={`btn-secondary ${liked ? "!bg-brand-500/15 !text-brand-600" : ""}`} aria-pressed={liked} onClick={() => react("LIKE")}>
         {liked ? "❤️" : "🤍"} {compact(s.likes)}
       </button>
       {type === "VIDEO" && (
-        <button className={`btn-secondary ${disliked ? "!bg-zinc-300 dark:!bg-zinc-700" : ""}`} aria-pressed={disliked} aria-label="Dislike"
-          onClick={() => run({ ...s, myReaction: disliked ? null : "DISLIKE", dislikes: s.dislikes + (disliked ? -1 : 1), likes: s.likes - (liked ? 1 : 0) },
-            () => (disliked ? Engagement.unreact(type, id) : Engagement.react(type, id, "DISLIKE")))}>
+        <button className={`btn-secondary ${disliked ? "!bg-zinc-300 dark:!bg-zinc-700" : ""}`} aria-pressed={disliked} aria-label="Dislike" onClick={() => react("DISLIKE")}>
           👎
         </button>
       )}
       <button className="btn-secondary" onClick={onComment}>💬 {compact(s.comments)}</button>
-      <button className="btn-secondary" onClick={() => run({ ...s, shares: s.shares + 1 }, async () => {
+      <button className="btn-secondary" onClick={() => run((c) => ({ ...c, shares: c.shares + 1 }), async () => {
         const path = type === "VIDEO" ? `/watch/${id}` : `/p/${id}`;
         await navigator.clipboard?.writeText(window.location.origin + import.meta.env.BASE_URL.replace(/\/$/, "") + path).catch(() => {});
         return Engagement.share(type, id);
       })}>↗ Share{s.shares ? ` ${compact(s.shares)}` : ""}</button>
       <button className={`btn-secondary ${s.bookmarked ? "!text-violet-brand" : ""}`} aria-pressed={s.bookmarked}
-        onClick={() => run({ ...s, bookmarked: !s.bookmarked }, async () => {
-          await (s.bookmarked ? Engagement.unbookmark(type, id) : Engagement.bookmark(type, id));
-          return { ...s, bookmarked: !s.bookmarked };
+        onClick={() => run((c) => ({ ...c, bookmarked: !c.bookmarked }), async (c) => {
+          await (c.bookmarked ? Engagement.unbookmark(type, id) : Engagement.bookmark(type, id));
+          return { ...stats.latest(id), bookmarked: !c.bookmarked };
         })}>
         {s.bookmarked ? "🔖 Saved" : "🔖 Save"}
       </button>

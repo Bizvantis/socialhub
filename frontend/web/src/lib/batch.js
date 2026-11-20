@@ -8,8 +8,10 @@ export function createBatchCache(fetchMany, keyOf, { maxBatch = 100, ttlMs = 10 
   const inflight = new Set();
   const listeners = new Set();
   let timer = null;
+  let version = 0; // bumps on every change, so React re-renders on value updates too (not only arrivals)
 
   function notify() {
+    version++;
     listeners.forEach((fn) => fn());
   }
 
@@ -59,5 +61,6 @@ export function createBatchCache(fetchMany, keyOf, { maxBatch = 100, ttlMs = 10 
       listeners.add(fn);
       return () => listeners.delete(fn);
     },
+    version: () => version,
   };
 }
