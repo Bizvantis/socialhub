@@ -1,0 +1,14 @@
+{
+  "dynamic": "strict",
+  "properties": {
+    "channelId":       { "type": "long" },
+    "ownerId":         { "type": "long" },
+    "handle":          { "type": "keyword", "normalizer": "lower",
+                         "fields": { "auto": { "type": "text", "analyzer": "autocomplete", "search_analyzer": "folded" } } },
+    "name":            { "type": "text", "analyzer": "folded",
+                         "fields": { "auto": { "type": "text", "analyzer": "autocomplete", "search_analyzer": "folded" } } },
+    "description":     { "type": "text", "analyzer": "folded" },
+    "avatarMediaId":   { "type": "long" },
+    "subscriberCount": { "type": "integer" }
+  }
+}

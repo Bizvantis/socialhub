@@ -7,7 +7,7 @@ import org.springframework.data.domain.Sort;
 /** Clamps client-supplied paging so nobody can request a page of a million rows. */
 public final class Pages {
 
-    public static final int MAX_SIZE = 50;
+    public static final int MAX_SIZE = PageSize.MAX;
 
     private Pages() {}
 
@@ -20,6 +20,6 @@ public final class Pages {
     }
 
     public static int clampSize(int size) {
-        return Math.min(Math.max(size, 1), MAX_SIZE);
+        return PageSize.clamp(size);
     }
 }

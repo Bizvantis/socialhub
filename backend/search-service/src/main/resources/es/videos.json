@@ -1,0 +1,21 @@
+{
+  "dynamic": "strict",
+  "properties": {
+    "videoId":          { "type": "long" },
+    "title":            { "type": "text", "analyzer": "folded",
+                          "fields": { "auto": { "type": "text", "analyzer": "autocomplete", "search_analyzer": "folded" },
+                                      "raw":  { "type": "keyword", "normalizer": "lower" } } },
+    "description":      { "type": "text", "analyzer": "folded" },
+    "tags":             { "type": "keyword", "normalizer": "lower" },
+    "category":         { "type": "keyword" },
+    "channelId":        { "type": "long" },
+    "channelHandle":    { "type": "keyword", "normalizer": "lower" },
+    "channelName":      { "type": "text", "analyzer": "folded" },
+    "ownerId":          { "type": "long" },
+    "mediaId":          { "type": "long" },
+    "thumbnailMediaId": { "type": "long" },
+    "durationSeconds":  { "type": "integer" },
+    "viewCount":        { "type": "long" },
+    "publishedAt":      { "type": "date" }
+  }
+}

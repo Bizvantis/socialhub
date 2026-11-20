@@ -81,8 +81,59 @@ services:
       timeout: 10s
       retries: 12
 
+  # Search index (Step 25). Single node, security off for local dev only.
+  # auto_create_index=false: an index must be created explicitly with its strict mapping.
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    container_name: socialhub-elasticsearch
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      action.auto_create_index: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health > /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+
+  # Task queues (Step 28): video processing and email delivery. UI on http://localhost:15672
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: socialhub-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: socialhub
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-socialhub_dev_mq}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  # Fake SMTP server that catches every email (Step 31). Inbox UI on http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.21
+    container_name: socialhub-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
 volumes:
   mysql_data:
   redis_data:
   s3_data:
   kafka_data:
+  es_data:
+  rabbitmq_data:

@@ -1,0 +1,14 @@
+{
+  "dynamic": "strict",
+  "properties": {
+    "userId":         { "type": "long" },
+    "username":       { "type": "keyword", "normalizer": "lower",
+                        "fields": { "auto": { "type": "text", "analyzer": "autocomplete", "search_analyzer": "folded" } } },
+    "displayName":    { "type": "text", "analyzer": "folded",
+                        "fields": { "auto": { "type": "text", "analyzer": "autocomplete", "search_analyzer": "folded" } } },
+    "bio":            { "type": "text", "analyzer": "folded" },
+    "avatarMediaId":  { "type": "long" },
+    "followerCount":  { "type": "integer" },
+    "privateAccount": { "type": "boolean" }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "dynamic": "strict",
+  "properties": {
+    "postId":    { "type": "long" },
+    "authorId":  { "type": "long" },
+    "type":      { "type": "keyword" },
+    "caption":   { "type": "text", "analyzer": "folded" },
+    "hashtags":  { "type": "keyword", "normalizer": "lower" },
+    "mediaIds":  { "type": "long" },
+    "createdAt": { "type": "date" }
+  }
+}

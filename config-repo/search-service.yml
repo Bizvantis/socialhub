@@ -1,0 +1,11 @@
+server:
+  port: 8088
+
+spring:
+  kafka:
+    consumer:
+      group-id: search-service
+
+app:
+  elasticsearch:
+    url: ${ELASTICSEARCH_URL:http://localhost:9200}
