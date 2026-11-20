@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Build aggregator for all backend modules.
+  Each service keeps its own Spring Boot parent; this POM only lists modules
+  so CI (and you) can build and test everything with one command:
+
+      mvn -f backend/pom.xml -B verify
+
+  `common` is listed first so services that depend on it build after it.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.socialhub</groupId>
+    <artifactId>socialhub-backend</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>socialhub-backend</name>
+
+    <modules>
+        <module>common</module>
+        <module>config-server</module>
+        <module>eureka-server</module>
+        <module>api-gateway</module>
+        <module>auth-service</module>
+        <module>user-service</module>
+        <module>media-service</module>
+    </modules>
+</project>

@@ -1,0 +1,2 @@
+com.socialhub.common.web.CommonWebAutoConfiguration
+com.socialhub.common.event.EventingAutoConfiguration
