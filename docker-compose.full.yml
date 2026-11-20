@@ -26,6 +26,7 @@ x-service: &service
     S3_CORS_ORIGINS: ${S3_CORS_ORIGINS:-http://localhost}
     SMTP_HOST: mailpit
     WEB_BASE_URL: ${WEB_BASE_URL:-http://localhost/app}
+    PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost}
     BOOTSTRAP_ADMINS: ${BOOTSTRAP_ADMINS:-}
     FEED_CELEBRITY_THRESHOLD: ${FEED_CELEBRITY_THRESHOLD:-1000}
   depends_on: &deps

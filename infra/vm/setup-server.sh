@@ -65,13 +65,14 @@ fi
 # Site- and size-specific settings, rewritten on every run.
 RAM_GB=$(awk '/MemTotal/{printf "%d", $2/1024/1024 + 0.5}' /proc/meminfo)
 if [ "$RAM_GB" -ge 16 ]; then JVM=768m; ES=1g; WORKER=1536m; else JVM=420m; ES=512m; WORKER=1g; fi
-sed -i '/^SITE_DOMAIN=\|^MEDIA_DOMAIN=\|^S3_PUBLIC_ENDPOINT=\|^S3_CORS_ORIGINS=\|^WEB_BASE_URL=\|^JVM_MEM_LIMIT=\|^ES_HEAP=\|^WORKER_MEM_LIMIT=/d' .env
+sed -i '/^SITE_DOMAIN=\|^MEDIA_DOMAIN=\|^S3_PUBLIC_ENDPOINT=\|^S3_CORS_ORIGINS=\|^WEB_BASE_URL=\|^PUBLIC_ORIGIN=\|^JVM_MEM_LIMIT=\|^ES_HEAP=\|^WORKER_MEM_LIMIT=/d' .env
 cat >> .env <<EOF
 SITE_DOMAIN=$SITE
 MEDIA_DOMAIN=$MEDIA
 S3_PUBLIC_ENDPOINT=https://$MEDIA
 S3_CORS_ORIGINS=https://$SITE
 WEB_BASE_URL=https://$SITE/app
+PUBLIC_ORIGIN=https://$SITE
 JVM_MEM_LIMIT=$JVM
 ES_HEAP=$ES
 WORKER_MEM_LIMIT=$WORKER

@@ -6,7 +6,7 @@ import { ErrorBox } from "../components/ui";
 
 function Shell({ title, subtitle, children }) {
   return (
-    <div className="grid min-h-screen place-items-center bg-[radial-gradient(60rem_30rem_at_10%_-10%,rgb(124_58_237/0.18),transparent),radial-gradient(50rem_30rem_at_110%_110%,rgb(249_115_22/0.15),transparent)] p-4">
+    <div className="grid min-h-screen place-items-center bg-[#f2f1ee] dark:bg-zinc-950 p-4">
       <main className="card w-full max-w-sm p-7 shadow-xl">
         <Link to="/" className="mb-5 flex items-center justify-center gap-2 text-lg font-extrabold">
           <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" className="h-9 w-9" /> SocialHub
@@ -63,7 +63,7 @@ export function LoginPage() {
   return (
     <Shell title="Welcome back" subtitle="Log in to see your feed.">
       {DEMO_USER && DEMO_PASSWORD && (
-        <div className="mb-5 grid gap-2 rounded-xl border border-violet-200 bg-violet-50 p-4 text-sm dark:border-violet-900 dark:bg-violet-950/40">
+        <div className="mb-5 grid gap-2 rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm dark:border-zinc-800 dark:bg-zinc-900">
           <p><span className="font-semibold">Just looking around?</span> Use the shared demo account: no sign-up needed.</p>
           <button type="button" className="btn-primary w-full py-2.5" disabled={busy} onClick={(e) => submit(e, true)}>
             {busy ? "Logging in..." : "Continue as demo user"}

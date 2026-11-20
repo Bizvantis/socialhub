@@ -20,6 +20,9 @@ spring:
             cors-configurations:
               '[/**]':
                 allowedOrigins:
+                  # The public site (set per deployment; Nginx -> gateway is plain HTTP, so the
+                  # browser's https origin never looks same-origin to the gateway).
+                  - "${PUBLIC_ORIGIN:http://localhost}"
                   - "http://localhost:5173"
                   - "http://localhost:3000"
                   - "http://127.0.0.1:5500"

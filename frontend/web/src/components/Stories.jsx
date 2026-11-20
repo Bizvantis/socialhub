@@ -8,7 +8,7 @@ import { Icon } from "./icons";
 
 const STORY_MS = 5000;
 
-/** Stories tray: one ring per author, unseen rings highlighted with the gradient. */
+/** Stories tray: one ring per author, unseen rings highlighted with an accent ring. */
 export function StoriesTray() {
   const { user } = useAuth();
   const tray = useQuery(() => Stories.tray(), []);
