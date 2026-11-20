@@ -29,5 +29,9 @@
         <module>post-service</module>
         <module>engagement-service</module>
         <module>feed-service</module>
+        <module>search-service</module>
+        <module>video-worker</module>
+        <module>notification-service</module>
+        <module>moderation-service</module>
     </modules>
 </project>

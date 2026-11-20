@@ -15,4 +15,7 @@ public interface MediaRepository extends JpaRepository<Media, Long> {
 
     /** Uploads that were started but never completed (cleanup job). */
     List<Media> findByStatusAndCreatedAtBefore(MediaStatus status, Instant before, Pageable page);
+
+    /** Jobs stuck in a processing state (reconciler). updated_at moves on every status change. */
+    List<Media> findByStatusAndUpdatedAtBefore(MediaStatus status, Instant before, Pageable page);
 }

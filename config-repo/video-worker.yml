@@ -1,0 +1,19 @@
+server:
+  port: 8091   # only actuator (health, prometheus); the worker has no public API
+
+app:
+  storage:
+    bucket: ${MEDIA_BUCKET:socialhub-media}
+    region: ${AWS_REGION:ap-south-1}
+    endpoint: ${S3_ENDPOINT:http://localhost:8333}
+    access-key: ${S3_ACCESS_KEY:socialhub}
+    secret-key: ${S3_SECRET_KEY:socialhub_dev_s3_secret}
+    path-style: ${S3_PATH_STYLE:true}
+  ffmpeg:
+    ffmpeg-path: ${FFMPEG_PATH:ffmpeg}
+    ffprobe-path: ${FFPROBE_PATH:ffprobe}
+    timeout: 30m
+  processing:
+    max-attempts: 3
+    retry-delay-ms: 15000
+    concurrency: 1     # transcoding is CPU-bound: scale out with more worker instances

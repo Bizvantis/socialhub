@@ -52,6 +52,19 @@ spring:
     listener:
       ack-mode: record
 
+  # Used only by services that have AMQP on the classpath.
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: ${RABBITMQ_USER:socialhub}
+    password: ${RABBITMQ_PASSWORD:socialhub_dev_mq}
+    publisher-confirm-type: simple       # producers wait for the broker's ack (no silent loss)
+    listener:
+      simple:
+        acknowledge-mode: auto           # ack on success, reject on exception
+        default-requeue-rejected: false  # rejected -> dead-letter (delayed retry), never a hot loop
+        prefetch: 1
+
 app:
   jwt:
     secret: ${JWT_SECRET:dev_only_secret_change_me_dev_only_secret_change_me_1234}
