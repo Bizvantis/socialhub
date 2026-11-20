@@ -68,7 +68,8 @@ public class FeedReader {
         ranked.sort(Map.Entry.<String, Double>comparingByValue().reversed());
         List<Map<String, Object>> items = new ArrayList<>();
         for (int i = offset; i < Math.min(ranked.size(), offset + s); i++) {
-            Map<String, Object> item = new LinkedHashMap<>(snaps.get(ranked.get(i).getKey()));
+            String key = ranked.get(i).getKey();
+            Map<String, Object> item = withLiveCounts(snaps.get(key), stats.get(key));
             item.put("rank", Math.round(ranked.get(i).getValue() * 1000) / 1000.0);
             items.add(item);
         }
@@ -109,7 +110,18 @@ public class FeedReader {
 
     private List<Map<String, Object>> hydrate(List<TypedTuple<String>> page) {
         Map<String, Map<String, Object>> snaps = store.items(page.stream().map(TypedTuple::getValue).toList());
-        return page.stream().map(t -> snaps.get(t.getValue())).filter(Objects::nonNull).toList();
+        Map<String, Map<Object, Object>> stats = store.stats(snaps.keySet());
+        return page.stream().filter(t -> snaps.get(t.getValue()) != null)
+                .map(t -> withLiveCounts(snaps.get(t.getValue()), stats.get(t.getValue()))).toList();
+    }
+
+    /** Snapshot + counters that change after publishing (video views). */
+    static Map<String, Object> withLiveCounts(Map<String, Object> snap, Map<Object, Object> st) {
+        Map<String, Object> item = new LinkedHashMap<>(snap);
+        if ("VIDEO".equals(item.get("type"))) {
+            item.put("viewCount", (long) num(st == null ? null : st.get("views")));
+        }
+        return item;
     }
 
     private static List<TypedTuple<String>> dedupe(List<TypedTuple<String>> sorted) {

@@ -36,6 +36,18 @@ public class FeedEventsConsumer {
         if (handles(e.type())) apply(e);
     }
 
+    /**
+     * Video views (best-effort analytics stream from video-service): kept as a counter next to the
+     * other engagement stats so feed cards show live view counts instead of the count at publish time.
+     */
+    @KafkaListener(topics = Topics.VIDEO_VIEWS)
+    public void onView(String message) {
+        EventEnvelope e = json.read(message);
+        if ("VIDEO_VIEWED".equals(e.type()) && store.firstTime("view:" + e.eventId())) {
+            store.bumpStat("V:" + e.longField("videoId"), "views", 1);
+        }
+    }
+
     void apply(EventEnvelope e) {
         switch (e.type()) {
             case "USER_FOLLOWED" -> writer.followed(e.longField("followerId"), e.longField("followeeId"));

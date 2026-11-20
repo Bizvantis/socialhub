@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { useAuth } from "../auth/AuthContext";
 import { Notifications, Users } from "../api/endpoints";
-import { ErrorBox } from "../components/ui";
+import { Avatar, ErrorBox } from "../components/ui";
 import { usersCache } from "../lib/hooks";
+import { IMAGE_TYPES, uploadFile } from "../lib/upload";
 
 export default function Settings() {
   const { user, reloadProfile } = useAuth();
@@ -12,6 +13,29 @@ export default function Settings() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState(null);
   const [email, setEmail] = useState(true);
+  const [photo, setPhoto] = useState({ busy: false, progress: 0, error: null });
+
+  async function changePhoto(file) {
+    if (!file) return;
+    if (!IMAGE_TYPES.includes(file.type)) return setPhoto({ busy: false, progress: 0, error: new Error("Use a JPEG, PNG or WebP image") });
+    if (file.size > 5 * 1024 * 1024) return setPhoto({ busy: false, progress: 0, error: new Error("Profile photos can be up to 5 MB") });
+    setPhoto({ busy: true, progress: 0, error: null });
+    try {
+      const media = await uploadFile("AVATAR", file, (progress) => setPhoto((p) => ({ ...p, progress })));
+      await Users.updateMe({ avatarMediaId: media.id });
+      usersCache.invalidate(user.userId);
+      await reloadProfile();
+      setPhoto({ busy: false, progress: 0, error: null });
+    } catch (err) {
+      setPhoto({ busy: false, progress: 0, error: err });
+    }
+  }
+
+  async function removePhoto() {
+    await Users.updateMe({ removeAvatar: true });
+    usersCache.invalidate(user.userId);
+    await reloadProfile();
+  }
 
   return (
     <div className="mx-auto grid max-w-xl gap-6">
@@ -35,6 +59,21 @@ export default function Settings() {
         }
       }}>
         <h1 className="text-xl font-bold">Edit profile</h1>
+        <div className="flex items-center gap-4">
+          <Avatar userId={user.userId} size={72} />
+          <div className="grid gap-1 text-sm">
+            <div className="flex flex-wrap gap-2">
+              <label className="btn-secondary cursor-pointer">
+                {photo.busy ? `Uploading ${photo.progress}%` : "Change photo"}
+                <input type="file" accept={IMAGE_TYPES.join(",")} className="hidden" disabled={photo.busy}
+                  onChange={(e) => { changePhoto(e.target.files?.[0]); e.target.value = ""; }} />
+              </label>
+              {user.avatarMediaId && !photo.busy && <button type="button" className="btn-ghost" onClick={removePhoto}>Remove</button>}
+            </div>
+            <span className="text-xs text-zinc-500">JPEG, PNG or WebP, up to 5 MB</span>
+            <ErrorBox error={photo.error} />
+          </div>
+        </div>
         <label className="grid gap-1 text-sm font-semibold">Display name
           <input className="input font-normal" maxLength={50} value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} />
         </label>

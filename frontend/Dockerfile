@@ -8,6 +8,11 @@ RUN cd landing/tailwind && npm ci --no-audit --no-fund
 COPY web/package*.json web/
 RUN cd web && npm ci --no-audit --no-fund
 COPY . .
+# Optional public-demo settings (only the demo server sets them).
+ARG VITE_DEMO_USERNAME=""
+ARG VITE_DEMO_PASSWORD=""
+ARG VITE_DEMO_NOTICE=""
+ENV VITE_DEMO_USERNAME=$VITE_DEMO_USERNAME VITE_DEMO_PASSWORD=$VITE_DEMO_PASSWORD VITE_DEMO_NOTICE=$VITE_DEMO_NOTICE
 RUN cd landing/tailwind && npm run build \
  && cd ../../web && npm run build
 

@@ -1,0 +1,66 @@
+# Public demo on a single Oracle Cloud "Always Free" Ampere VM (4 OCPU / 24 GB, arm64):
+#   docker compose -f docker-compose.yml -f docker-compose.full.yml -f docker-compose.oracle.yml up -d --build
+#
+# Differences from docker-compose.prod.yml (AWS):
+#  - media stays in SeaweedFS on the VM; browsers reach it at https://media.<SITE_DOMAIN>
+#    (pre-signed URLs are signed for that host; Nginx forwards it unchanged);
+#  - images are built on the VM itself (arm64), from jars built anywhere;
+#  - HTTPS for both hostnames with one Let's Encrypt certificate (see docs/runbooks/oracle.md);
+#  - more memory per JVM, since the free VM has 24 GB;
+#  - the web app shows a "demo data" note and a one-click demo login.
+# Only ports 80 and 443 are published. Grafana/Prometheus: SSH tunnel to 127.0.0.1.
+
+x-jvm: &jvm
+  mem_limit: 768m
+
+services:
+  mysql:         { ports: !reset [] }
+  redis:         { ports: !reset [] }
+  s3:            { ports: !reset [] }
+  kafka:         { ports: !reset [] }
+  rabbitmq:      { ports: !reset [] }
+  mailpit:       { ports: !reset [] }
+  elasticsearch:
+    ports: !reset []
+    environment:
+      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+
+  config-server:        *jvm
+  eureka-server:        *jvm
+  auth-service:         *jvm
+  user-service:         *jvm
+  media-service:        *jvm
+  video-service:        *jvm
+  post-service:         *jvm
+  engagement-service:   *jvm
+  feed-service:         *jvm
+  search-service:       *jvm
+  notification-service: *jvm
+  moderation-service:   *jvm
+  api-gateway:          *jvm
+  video-worker:
+    mem_limit: 1536m          # ffmpeg runs inside this container
+
+  web:
+    build:
+      args:
+        VITE_DEMO_USERNAME: guest
+        VITE_DEMO_PASSWORD: ${DEMO_PASSWORD}
+        VITE_DEMO_NOTICE: "1"
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN}
+    ports: !override
+      - "80:80"
+      - "443:443"
+    volumes: !override
+      - ./infra/nginx/selfhost-tls.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./infra/nginx/socialhub-locations.conf:/etc/nginx/snippets/socialhub-locations.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+
+  prometheus:
+    ports: !override
+      - "127.0.0.1:9090:9090"
+  grafana:
+    ports: !override
+      - "127.0.0.1:3000:3000"

@@ -32,6 +32,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen">
+      <DemoNotice />
       <TopBar unread={unread} />
       <div className="mx-auto flex max-w-7xl gap-6 px-3 sm:px-5">
         <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-52 shrink-0 py-4 lg:block">
@@ -184,5 +185,22 @@ function MobileNav({ user }) {
         </NavLink>
       ))}
     </nav>
+  );
+}
+
+/** One-line note that the content is sample data (shown on the public demo; dismissible). */
+function DemoNotice() {
+  const [hidden, setHidden] = useState(() => {
+    try { return localStorage.getItem("demo-notice-dismissed") === "1"; } catch { return false; }
+  });
+  if (!import.meta.env.VITE_DEMO_NOTICE || hidden) return null;
+  return (
+    <div className="flex items-center justify-center gap-3 bg-zinc-900 px-4 py-1.5 text-center text-xs text-zinc-200">
+      <span>Portfolio demo: accounts and posts are sample data. Photos from Unsplash via Lorem Picsum, avatars by DiceBear.</span>
+      <button className="font-semibold text-white hover:underline" onClick={() => {
+        setHidden(true);
+        try { localStorage.setItem("demo-notice-dismissed", "1"); } catch { /* private mode */ }
+      }}>Dismiss</button>
+    </div>
   );
 }

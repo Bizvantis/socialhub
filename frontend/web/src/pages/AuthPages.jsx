@@ -29,6 +29,10 @@ function Field({ label, error, ...props }) {
   );
 }
 
+// Public demo account for visitors (set at build time on the demo server; absent elsewhere).
+const DEMO_USER = import.meta.env.VITE_DEMO_USERNAME;
+const DEMO_PASSWORD = import.meta.env.VITE_DEMO_PASSWORD;
+
 export function LoginPage() {
   const { login, status } = useAuth();
   const navigate = useNavigate();
@@ -39,13 +43,15 @@ export function LoginPage() {
 
   if (status === "authenticated") return <Navigate to={from} replace />;
 
-  async function submit(e) {
+  async function submit(e, demo = false) {
     e.preventDefault();
-    if (!form.id || !form.password) { setError(new Error("Enter your email/username and password.")); return; }
+    const id = demo ? DEMO_USER : form.id.trim();
+    const password = demo ? DEMO_PASSWORD : form.password;
+    if (!id || !password) { setError(new Error("Enter your email/username and password.")); return; }
     setBusy(true);
     setError(null);
     try {
-      await login(form.id.trim(), form.password);
+      await login(id, password);
       navigate(from, { replace: true });
     } catch (err) {
       setError(err.status === 401 ? new Error("Wrong email/username or password.") : err);
@@ -56,6 +62,14 @@ export function LoginPage() {
 
   return (
     <Shell title="Welcome back" subtitle="Log in to see your feed.">
+      {DEMO_USER && DEMO_PASSWORD && (
+        <div className="mb-5 grid gap-2 rounded-xl border border-violet-200 bg-violet-50 p-4 text-sm dark:border-violet-900 dark:bg-violet-950/40">
+          <p><span className="font-semibold">Just looking around?</span> Use the shared demo account: no sign-up needed.</p>
+          <button type="button" className="btn-primary w-full py-2.5" disabled={busy} onClick={(e) => submit(e, true)}>
+            {busy ? "Logging in..." : "Continue as demo user"}
+          </button>
+        </div>
+      )}
       <form onSubmit={submit} className="grid gap-4" noValidate>
         <Field label="Email or username" autoComplete="username" value={form.id} onChange={(e) => setForm({ ...form, id: e.target.value })} />
         <Field label="Password" type="password" autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />

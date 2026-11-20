@@ -1,6 +1,7 @@
 
 package com.socialhub.userservice.service;
 
+import com.socialhub.userservice.client.MediaClient;
 import com.socialhub.userservice.dto.*;
 import com.socialhub.userservice.entity.*;
 import com.socialhub.userservice.exception.ApiException;
@@ -21,14 +22,16 @@ public class ProfileService {
     private final ProfileCache cache;
     private final FollowCache followCache;
     private final UserEvents events;
+    private final MediaClient media;
 
     public ProfileService(ProfileRepository profiles, FollowRepository follows,
-                          ProfileCache cache, FollowCache followCache, UserEvents events) {
+                          ProfileCache cache, FollowCache followCache, UserEvents events, MediaClient media) {
         this.profiles = profiles;
         this.follows = follows;
         this.cache = cache;
         this.followCache = followCache;
         this.events = events;
+        this.media = media;
     }
 
     @Transactional
@@ -54,6 +57,12 @@ public class ProfileService {
         if (r.displayName() != null) p.setDisplayName(r.displayName().trim());
         if (r.bio() != null) p.setBio(r.bio().trim());
         if (r.privateAccount() != null) p.setPrivateAccount(r.privateAccount());
+        if (Boolean.TRUE.equals(r.removeAvatar())) {
+            p.setAvatarMediaId(null);
+        } else if (r.avatarMediaId() != null && !r.avatarMediaId().equals(p.getAvatarMediaId())) {
+            media.requireAvatar(r.avatarMediaId(), userId);
+            p.setAvatarMediaId(r.avatarMediaId());
+        }
 
         events.profileUpdated(p);
         evictAfterCommit(userId);

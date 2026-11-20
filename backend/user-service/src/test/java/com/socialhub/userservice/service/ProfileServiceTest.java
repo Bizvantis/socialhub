@@ -37,6 +37,9 @@ class ProfileServiceTest {
     @Mock
     private UserEvents events;
 
+    @Mock
+    private com.socialhub.userservice.client.MediaClient media;
+
     @InjectMocks
     private ProfileService profileService;
 

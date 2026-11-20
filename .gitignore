@@ -23,3 +23,7 @@ application-local.yml
 # OS
 .DS_Store
 Thumbs.db
+# demo seeder: downloaded/generated media and per-target secrets/state
+tools/seed/assets/
+tools/seed/.seed-*.json
+tools/seed/__pycache__/

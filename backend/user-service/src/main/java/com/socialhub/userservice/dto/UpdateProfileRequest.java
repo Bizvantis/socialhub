@@ -10,5 +10,11 @@ public record UpdateProfileRequest(
         @Size(max = 300)
         String bio,
 
-        Boolean privateAccount
+        Boolean privateAccount,
+
+        /** An uploaded media item with purpose AVATAR; null = keep the current photo. */
+        Long avatarMediaId,
+
+        /** true = remove the profile photo. */
+        Boolean removeAvatar
 ) {}
