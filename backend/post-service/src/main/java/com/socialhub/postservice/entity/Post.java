@@ -62,7 +62,7 @@ public class Post {
     @Column(name = "media_id")
     private List<Long> mediaIds = new ArrayList<>();
 
-    @Column(name = "created_at", insertable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
     @Column(name = "updated_at", insertable = false, updatable = false)
@@ -70,5 +70,11 @@ public class Post {
 
     public boolean isVisibleState() {
         return status == Status.READY && !deleted && !removed;
+    }
+
+    /** Set in Java (not only by the DB default) so create responses include it. */
+    @PrePersist
+    void onCreate() {
+        if (createdAt == null) createdAt = Instant.now();
     }
 }

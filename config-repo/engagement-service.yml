@@ -1,0 +1,18 @@
+server:
+  port: 8086
+
+spring:
+  datasource:
+    url: jdbc:mysql://${app.mysql.host}:3306/engagement_db?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+    username: engagement_user
+    password: ${ENGAGEMENT_DB_PASSWORD:engagement_dev_pw}
+  flyway:
+    enabled: true
+  data:
+    redis:
+      host: ${app.redis.host}
+      port: 6379
+      password: ${REDIS_PASSWORD:change_me}
+  kafka:
+    consumer:
+      group-id: engagement-service

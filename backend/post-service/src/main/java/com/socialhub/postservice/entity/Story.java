@@ -40,7 +40,7 @@ public class Story {
     @Column(name = "view_count", nullable = false)
     private int viewCount;
 
-    @Column(name = "created_at", insertable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
     @Column(name = "expires_at", nullable = false)
@@ -48,5 +48,11 @@ public class Story {
 
     public boolean isActive(Instant now) {
         return ready && !deleted && expiresAt.isAfter(now);
+    }
+
+    /** Set in Java (not only by the DB default) so create responses include it. */
+    @PrePersist
+    void onCreate() {
+        if (createdAt == null) createdAt = Instant.now();
     }
 }

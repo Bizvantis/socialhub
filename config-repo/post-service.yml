@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://${app.mysql.host}:3306/post_db
+    url: jdbc:mysql://${app.mysql.host}:3306/post_db?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
     username: post_user
     password: ${POST_DB_PASSWORD:post_dev_pw}
   flyway:

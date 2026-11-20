@@ -32,6 +32,9 @@ spring:
     properties:
       # Load lazy collections for up to 50 parents per query (avoids N+1 on lists).
       hibernate.default_batch_fetch_size: 50
+      # Store and read every timestamp in UTC (JDBC URLs also pin the session to UTC),
+      # so values written by Java and by MySQL defaults agree regardless of server timezone.
+      hibernate.jdbc.time_zone: UTC
 
   # Used only by services that have Kafka on the classpath.
   kafka:

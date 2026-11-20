@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://${app.mysql.host}:3306/video_db
+    url: jdbc:mysql://${app.mysql.host}:3306/video_db?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
     username: video_user
     password: ${VIDEO_DB_PASSWORD:video_dev_pw}
   flyway:

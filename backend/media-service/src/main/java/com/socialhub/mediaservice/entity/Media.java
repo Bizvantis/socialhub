@@ -64,7 +64,7 @@ public class Media {
     @Column(nullable = false)
     private boolean restricted;
 
-    @Column(name = "created_at", insertable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
     @Column(name = "updated_at", insertable = false, updatable = false)
@@ -73,5 +73,11 @@ public class Media {
     /** All files for one media item share this prefix (original, thumbnail, HLS output). */
     public String keyPrefix() {
         return objectKey.substring(0, objectKey.lastIndexOf('/') + 1);
+    }
+
+    /** Set in Java (not only by the DB default) so create responses include it. */
+    @PrePersist
+    void onCreate() {
+        if (createdAt == null) createdAt = Instant.now();
     }
 }

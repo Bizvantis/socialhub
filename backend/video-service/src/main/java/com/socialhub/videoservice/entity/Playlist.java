@@ -36,9 +36,15 @@ public class Playlist {
     @Column(name = "video_count", nullable = false)
     private int videoCount;
 
-    @Column(name = "created_at", insertable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
     @Column(name = "updated_at", insertable = false, updatable = false)
     private Instant updatedAt;
+
+    /** Set in Java (not only by the DB default) so create responses include it. */
+    @PrePersist
+    void onCreate() {
+        if (createdAt == null) createdAt = Instant.now();
+    }
 }

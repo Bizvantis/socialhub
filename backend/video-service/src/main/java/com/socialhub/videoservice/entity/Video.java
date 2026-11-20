@@ -75,7 +75,7 @@ public class Video {
     @Column(name = "tag")
     private Set<String> tags = new LinkedHashSet<>();
 
-    @Column(name = "created_at", insertable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
     @Column(name = "updated_at", insertable = false, updatable = false)
@@ -89,5 +89,11 @@ public class Video {
     /** Watchable by someone who is not the owner (UNLISTED works with the link). */
     public boolean isWatchableByOthers() {
         return visibility != Visibility.PRIVATE && status == VideoStatus.READY && !deleted && !removed;
+    }
+
+    /** Set in Java (not only by the DB default) so create responses include it. */
+    @PrePersist
+    void onCreate() {
+        if (createdAt == null) createdAt = Instant.now();
     }
 }

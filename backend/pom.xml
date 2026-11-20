@@ -27,5 +27,6 @@
         <module>media-service</module>
         <module>video-service</module>
         <module>post-service</module>
+        <module>engagement-service</module>
     </modules>
 </project>
