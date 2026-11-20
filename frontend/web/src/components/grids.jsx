@@ -2,10 +2,11 @@ import { Link } from "react-router";
 import { useMedia } from "../lib/hooks";
 import { VideoCard } from "./cards";
 import { EmptyState, MediaImage } from "./ui";
+import { Icon } from "./icons";
 
 /** Square thumbnail grid (profile, explore, hashtag pages). */
 export function PostGrid({ posts, empty = "No posts yet" }) {
-  if (!posts.length) return <EmptyState icon="📷" title={empty} />;
+  if (!posts.length) return <EmptyState icon="image" title={empty} />;
   return (
     <div className="grid grid-cols-3 gap-1 sm:gap-2">
       {posts.map((p) => <PostTile key={p.id} post={p} />)}
@@ -22,14 +23,14 @@ function PostTile({ post }) {
         ? (m?.thumbnailUrl ? <img src={m.thumbnailUrl} alt="" loading="lazy" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-xs text-zinc-500">Processing…</div>)
         : <MediaImage id={post.mediaIds[0]} className="h-full w-full transition group-hover:scale-105" />}
       <span className="absolute right-1.5 top-1.5 text-sm text-white drop-shadow" aria-hidden="true">
-        {post.type === "REEL" ? "🎬" : post.type === "CAROUSEL" ? "❐" : ""}
+        {post.type === "REEL" ? <Icon name="film" size={18} /> : post.type === "CAROUSEL" ? <Icon name="layers" size={18} /> : null}
       </span>
     </Link>
   );
 }
 
 export function VideoGrid({ videos, empty = "No videos yet" }) {
-  if (!videos.length) return <EmptyState icon="🎬" title={empty} />;
+  if (!videos.length) return <EmptyState icon="film" title={empty} />;
   return (
     <div className="grid gap-x-4 gap-y-8 sm:grid-cols-2 xl:grid-cols-3">
       {videos.map((v) => <VideoCard key={v.id} video={v} />)}

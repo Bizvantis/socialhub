@@ -4,6 +4,7 @@ import { useAuth } from "../auth/AuthContext";
 import { Stories } from "../api/endpoints";
 import { timeAgo, useMedia, useQuery } from "../lib/hooks";
 import { Avatar, Modal, UserName } from "./ui";
+import { Icon } from "./icons";
 
 const STORY_MS = 5000;
 
@@ -20,7 +21,7 @@ export function StoriesTray() {
       {!hasOwn && (
         <Link to="/upload?tab=story" className="flex w-16 shrink-0 flex-col items-center gap-1 text-xs">
           <div className="relative"><Avatar userId={user?.userId} size={60} />
-            <span className="absolute -bottom-0.5 -right-0.5 grid h-5 w-5 place-items-center rounded-full border-2 border-white bg-violet-brand text-xs font-bold text-white dark:border-zinc-950">+</span>
+            <span className="absolute -bottom-0.5 -right-0.5 grid h-5 w-5 place-items-center rounded-full border-2 border-white bg-zinc-900 text-white dark:border-zinc-950 dark:bg-white dark:text-zinc-900"><Icon name="plus" size={12} strokeWidth={2.5} /></span>
           </div>
           <span className="truncate">Your story</span>
         </Link>
@@ -80,7 +81,7 @@ function StoryViewer({ rings, index, onIndex, onClose }) {
           <Avatar userId={ring.authorId} size={32} />
           <UserName userId={ring.authorId} className="text-white" />
           <span className="text-white/70">{timeAgo(story.createdAt)}</span>
-          <button className="ml-auto text-xl" onClick={onClose} aria-label="Close stories">✕</button>
+          <button className="ml-auto" onClick={onClose} aria-label="Close stories"><Icon name="close" size={22} /></button>
         </div>
         {story.mediaType === "VIDEO"
           ? <video src={media?.url} poster={media?.thumbnailUrl} autoPlay playsInline onEnded={next} className="h-full w-full object-contain" />
@@ -91,7 +92,7 @@ function StoryViewer({ rings, index, onIndex, onClose }) {
         {mine && (
           <button className="absolute bottom-3 left-3 rounded-full bg-black/50 px-3 py-1 text-sm text-white"
             onClick={async () => setViewers(await Stories.viewers(story.id))}>
-            👁 {story.viewCount ?? 0} viewers
+            <Icon name="eye" size={16} /> {story.viewCount ?? 0} viewers
           </button>
         )}
       </div>

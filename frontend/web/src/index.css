@@ -1,36 +1,67 @@
 @import "tailwindcss";
 
-/* Dark mode follows the OS (prefers-color-scheme), same as the landing site. */
-@theme {
-  --color-brand-500: #ec4899;
-  --color-brand-600: #db2777;
-  --color-violet-brand: #7c3aed;
-  --color-orange-brand: #f97316;
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+/*
+ * Visual language: calm and classic. Neutral surfaces, one deep-ink accent used sparingly
+ * (links, active states, focus), solid buttons, no gradients. Dark mode follows the OS.
+ */
+:root {
+  --accent: #2f3e8f;          /* deep ink blue */
+  --accent-strong: #24306f;
+  --accent-soft: #eef0fa;
+  --heart: #d9264f;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent: #a9b6f5;
+    --accent-strong: #c3ccfa;
+    --accent-soft: #1d2140;
+    --heart: #f0587a;
+  }
 }
 
+@theme inline {
+  /* Legacy token names kept so every component picks up the new palette. */
+  --color-brand-500: var(--accent);
+  --color-brand-600: var(--accent-strong);
+  --color-violet-brand: var(--accent);
+  --color-orange-brand: var(--accent);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-heart: var(--heart);
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+}
+
+html { font-feature-settings: "cv11", "ss01"; }
+h1, h2, h3 { letter-spacing: -0.011em; }
+
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition
          disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2
-         focus-visible:outline-brand-500;
+         focus-visible:outline-accent;
 }
 @utility btn-primary {
-  @apply btn text-white bg-linear-to-r from-violet-brand via-brand-500 to-orange-brand hover:brightness-110;
+  @apply btn bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white;
 }
 @utility btn-secondary {
-  @apply btn bg-zinc-200/70 text-zinc-900 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700;
+  @apply btn border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50
+         dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800;
 }
 @utility btn-ghost {
-  @apply btn text-zinc-700 hover:bg-zinc-200/60 dark:text-zinc-300 dark:hover:bg-zinc-800;
+  @apply btn text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100;
 }
 @utility input {
-  @apply w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm outline-none transition
-         focus:border-violet-brand focus:ring-4 focus:ring-violet-brand/15
+  @apply w-full rounded-lg border border-zinc-300 bg-white px-3.5 py-2.5 text-sm outline-none transition
+         placeholder:text-zinc-400 focus:border-accent focus:ring-4 focus:ring-accent/10
          dark:border-zinc-700 dark:bg-zinc-900;
 }
 @utility card {
-  @apply rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900;
+  @apply rounded-xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-none;
 }
+/* Story ring: a thin accent circle (unseen) instead of the old gradient. */
 @utility gradient-ring {
-  @apply rounded-full bg-linear-to-tr from-violet-brand via-brand-500 to-orange-brand p-[2.5px];
+  @apply rounded-full bg-accent p-[2px];
 }

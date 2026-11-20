@@ -1,7 +1,7 @@
-# HTTPS for a single self-hosted VM (docker-compose.oracle.yml). The nginx image fills in
+# HTTPS for a single self-hosted VM (docker-compose.vm.yml). The nginx image fills in
 # ${SITE_DOMAIN} at start-up (envsubst); Nginx's own $variables are left untouched.
 #   https://SITE_DOMAIN        landing site, React app (/app/), API (/api/)
-#   https://media.SITE_DOMAIN  S3 (SeaweedFS) for pre-signed uploads/downloads and HLS segments
+#   https://MEDIA_DOMAIN       S3 (SeaweedFS) for pre-signed uploads/downloads and HLS segments
 
 upstream gateway {
     server api-gateway:8080;
@@ -10,7 +10,7 @@ upstream gateway {
 
 server {
     listen 80;
-    server_name ${SITE_DOMAIN} media.${SITE_DOMAIN};
+    server_name ${SITE_DOMAIN} ${MEDIA_DOMAIN};
     server_tokens off;
 
     location /.well-known/acme-challenge/ {
@@ -45,7 +45,7 @@ server {
 server {
     listen 443 ssl;
     http2 on;
-    server_name media.${SITE_DOMAIN};
+    server_name ${MEDIA_DOMAIN};
     server_tokens off;
 
     ssl_certificate     /etc/letsencrypt/live/${SITE_DOMAIN}/fullchain.pem;

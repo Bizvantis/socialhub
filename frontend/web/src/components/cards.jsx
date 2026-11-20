@@ -4,6 +4,7 @@ import { useAuth } from "../auth/AuthContext";
 import { Engagement, Users } from "../api/endpoints";
 import { compact, duration, timeAgo, useMedia, useStats, usersCache } from "../lib/hooks";
 import { Avatar, MediaImage, UserName } from "./ui";
+import { Icon } from "./icons";
 
 /** Thumbnail: custom thumbnail if set, else the auto-generated one from the transcoder. */
 export function VideoThumb({ video, className = "" }) {
@@ -14,7 +15,7 @@ export function VideoThumb({ video, className = "" }) {
   return (
     <div className={`relative aspect-video overflow-hidden rounded-xl bg-zinc-200 dark:bg-zinc-800 ${className}`}>
       {url ? <img src={url} alt="" loading="lazy" className="h-full w-full object-cover" />
-        : <div className="grid h-full place-items-center text-sm text-zinc-500">{video.status === "PROCESSING" ? "Processing…" : "▶"}</div>}
+        : <div className="grid h-full place-items-center text-sm text-zinc-500">{video.status === "PROCESSING" ? "Processing…" : <Icon name="video" size={28} />}</div>}
       {video.durationSeconds != null && (
         <span className="absolute bottom-1.5 right-1.5 rounded bg-black/75 px-1.5 py-0.5 text-xs font-semibold text-white">{duration(video.durationSeconds)}</span>
       )}
@@ -58,7 +59,7 @@ export function ChannelAvatar({ channel, size = 36 }) {
   return (
     <div className="shrink-0 overflow-hidden rounded-full" style={{ width: size, height: size }}>
       <MediaImage id={channel.avatarMediaId} className="h-full w-full"
-        fallback={<div className="grid h-full w-full place-items-center bg-linear-to-br from-orange-brand to-brand-500 font-bold text-white">{channel.name?.[0]?.toUpperCase()}</div>} />
+        fallback={<div className="grid h-full w-full place-items-center bg-zinc-200 font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">{channel.name?.[0]?.toUpperCase()}</div>} />
     </div>
   );
 }
@@ -99,28 +100,29 @@ export function ActionBar({ type, id, onComment }) {
     },
     (c) => (c.myReaction === kind ? Engagement.unreact(type, id) : Engagement.react(type, id, kind)),
   );
+  const act = "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100";
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <button className={`btn-secondary ${liked ? "!bg-brand-500/15 !text-brand-600" : ""}`} aria-pressed={liked} onClick={() => react("LIKE")}>
-        {liked ? "❤️" : "🤍"} {compact(s.likes)}
+    <div className="-ml-2.5 flex flex-wrap items-center gap-0.5">
+      <button className={`${act} ${liked ? "!text-heart" : ""}`} aria-pressed={liked} aria-label="Like" onClick={() => react("LIKE")}>
+        <Icon name="heart" filled={liked} /> <span className="tabular-nums">{compact(s.likes)}</span>
       </button>
       {type === "VIDEO" && (
-        <button className={`btn-secondary ${disliked ? "!bg-zinc-300 dark:!bg-zinc-700" : ""}`} aria-pressed={disliked} aria-label="Dislike" onClick={() => react("DISLIKE")}>
-          👎
+        <button className={`${act} ${disliked ? "!text-zinc-900 dark:!text-white" : ""}`} aria-pressed={disliked} aria-label="Dislike" onClick={() => react("DISLIKE")}>
+          <Icon name="thumbDown" filled={disliked} size={19} />
         </button>
       )}
-      <button className="btn-secondary" onClick={onComment}>💬 {compact(s.comments)}</button>
-      <button className="btn-secondary" onClick={() => run((c) => ({ ...c, shares: c.shares + 1 }), async () => {
+      <button className={act} onClick={onComment} aria-label="Comments"><Icon name="comment" /> <span className="tabular-nums">{compact(s.comments)}</span></button>
+      <button className={act} aria-label="Share" onClick={() => run((c) => ({ ...c, shares: c.shares + 1 }), async () => {
         const path = type === "VIDEO" ? `/watch/${id}` : `/p/${id}`;
         await navigator.clipboard?.writeText(window.location.origin + import.meta.env.BASE_URL.replace(/\/$/, "") + path).catch(() => {});
         return Engagement.share(type, id);
-      })}>↗ Share{s.shares ? ` ${compact(s.shares)}` : ""}</button>
-      <button className={`btn-secondary ${s.bookmarked ? "!text-violet-brand" : ""}`} aria-pressed={s.bookmarked}
+      })}><Icon name="share" size={19} />{s.shares ? <span className="tabular-nums">{compact(s.shares)}</span> : <span>Share</span>}</button>
+      <button className={`${act} ml-auto ${s.bookmarked ? "!text-zinc-900 dark:!text-white" : ""}`} aria-pressed={s.bookmarked}
         onClick={() => run((c) => ({ ...c, bookmarked: !c.bookmarked }), async (c) => {
           await (c.bookmarked ? Engagement.unbookmark(type, id) : Engagement.bookmark(type, id));
           return { ...stats.latest(id), bookmarked: !c.bookmarked };
         })}>
-        {s.bookmarked ? "🔖 Saved" : "🔖 Save"}
+        <Icon name="bookmark" filled={s.bookmarked} size={19} />{s.bookmarked ? "Saved" : "Save"}
       </button>
     </div>
   );
@@ -133,8 +135,8 @@ export function RichText({ text }) {
   return (
     <p className="whitespace-pre-wrap break-words">
       {parts.map((p, i) => {
-        if (p.startsWith("#")) return <Link key={i} to={`/tags/${p.slice(1).toLowerCase()}`} className="text-violet-brand hover:underline">{p}</Link>;
-        if (p.startsWith("@") && p.length > 3) return <Link key={i} to={`/u/${p.slice(1)}`} className="text-violet-brand hover:underline">{p}</Link>;
+        if (p.startsWith("#")) return <Link key={i} to={`/tags/${p.slice(1).toLowerCase()}`} className="font-medium text-accent hover:underline">{p}</Link>;
+        if (p.startsWith("@") && p.length > 3) return <Link key={i} to={`/u/${p.slice(1)}`} className="font-medium text-accent hover:underline">{p}</Link>;
         return <span key={i}>{p}</span>;
       })}
     </p>
@@ -155,7 +157,7 @@ export function PostCard({ post }) {
           <UserName userId={post.authorId} />
           <div className="text-xs text-zinc-500">{timeAgo(post.createdAt)}{post.visibility === "FOLLOWERS" && " · Followers"}</div>
         </div>
-        <Link to={`/p/${post.id}`} className="btn-ghost px-2" aria-label="Open post">⋯</Link>
+        <Link to={`/p/${post.id}`} className="btn-ghost px-2" aria-label="Open post"><Icon name="more" /></Link>
       </header>
       <div className="relative bg-black">
         {post.type === "REEL" ? (
@@ -165,17 +167,17 @@ export function PostCard({ post }) {
         )}
         {post.mediaIds.length > 1 && (
           <>
-            {index > 0 && <button onClick={() => setIndex(index - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 px-2.5 py-1 text-zinc-900" aria-label="Previous image">‹</button>}
-            {index < post.mediaIds.length - 1 && <button onClick={() => setIndex(index + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 px-2.5 py-1 text-zinc-900" aria-label="Next image">›</button>}
+            {index > 0 && <button onClick={() => setIndex(index - 1)} className="absolute left-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-zinc-900 shadow" aria-label="Previous image"><Icon name="chevronLeft" size={16} strokeWidth={2.25} /></button>}
+            {index < post.mediaIds.length - 1 && <button onClick={() => setIndex(index + 1)} className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-zinc-900 shadow" aria-label="Next image"><Icon name="chevronRight" size={16} strokeWidth={2.25} /></button>}
             <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
               {post.mediaIds.map((m, i) => <span key={m} className={`h-1.5 w-1.5 rounded-full ${i === index ? "bg-white" : "bg-white/40"}`} />)}
             </div>
           </>
         )}
       </div>
-      <div className="grid gap-2 p-3">
+      <div className="grid gap-1.5 px-3 pb-3.5 pt-2">
         <ActionBar type="POST" id={post.id} onComment={() => navigate(`/p/${post.id}`)} />
-        {post.caption && <div className="text-sm"><UserName userId={post.authorId} className="mr-1.5" /><RichText text={post.caption} /></div>}
+        {post.caption && <div className="text-[0.925rem] leading-relaxed"><UserName userId={post.authorId} className="mr-1.5" /><RichText text={post.caption} /></div>}
       </div>
     </article>
   );

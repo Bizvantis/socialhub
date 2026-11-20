@@ -5,6 +5,7 @@ import { Notifications, Users } from "../api/endpoints";
 import { Avatar, ErrorBox } from "../components/ui";
 import { usersCache } from "../lib/hooks";
 import { IMAGE_TYPES, uploadFile } from "../lib/upload";
+import { Icon } from "../components/icons";
 
 export default function Settings() {
   const { user, reloadProfile } = useAuth();
@@ -40,9 +41,9 @@ export default function Settings() {
   return (
     <div className="mx-auto grid max-w-xl gap-6">
       {params.get("welcome") && (
-        <div className="rounded-2xl bg-linear-to-r from-violet-brand to-brand-500 p-5 text-white">
-          <p className="text-lg font-bold">Welcome to SocialHub, {user.username}! 🎉</p>
-          <p className="text-sm opacity-90">Add a display name and bio, then <Link to="/explore" className="underline">explore</Link> to find people to follow.</p>
+        <div className="card border-l-4 border-l-accent p-5">
+          <p className="font-serif text-xl font-semibold">Welcome to SocialHub, {user.username}</p>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Add a display name and bio, then <Link to="/explore" className="underline">explore</Link> to find people to follow.</p>
         </div>
       )}
       <form className="card grid gap-4 p-5" onSubmit={async (e) => {
@@ -58,7 +59,7 @@ export default function Settings() {
           setError(err);
         }
       }}>
-        <h1 className="text-xl font-bold">Edit profile</h1>
+        <h1 className="font-serif text-2xl font-semibold tracking-tight">Edit profile</h1>
         <div className="flex items-center gap-4">
           <Avatar userId={user.userId} size={72} />
           <div className="grid gap-1 text-sm">
@@ -85,7 +86,7 @@ export default function Settings() {
           Private account
         </label>
         <ErrorBox error={error} />
-        <button className="btn-primary">{saved ? "Saved ✓" : "Save changes"}</button>
+        <button className="btn-primary">{saved ? <><Icon name="check" size={16} strokeWidth={2.25} />Saved</> : "Save changes"}</button>
       </form>
 
       <section className="card grid gap-3 p-5">

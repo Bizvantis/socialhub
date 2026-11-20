@@ -14,7 +14,7 @@ export default function Admin() {
   const stats = useQuery(() => Moderation.stats(), []);
   return (
     <div className="grid gap-5">
-      <h1 className="text-2xl font-bold">Moderation</h1>
+      <h1 className="font-serif text-3xl font-semibold tracking-tight">Moderation</h1>
       {stats.data && (
         <div className="grid gap-3 sm:grid-cols-3">
           <Stat label="Open reports" value={stats.data.openReports} />
@@ -37,7 +37,7 @@ function Queue({ onChanged }) {
   const [error, setError] = useState(null);
   if (q.loading) return <Spinner />;
   if (q.error) return <ErrorBox error={q.error} onRetry={q.reload} />;
-  if (!q.data.length) return <p className="py-10 text-center text-sm text-zinc-500">The queue is empty. 🎉</p>;
+  if (!q.data.length) return <p className="py-10 text-center text-sm text-zinc-500">The queue is empty.</p>;
 
   async function act(fn) {
     setError(null);
@@ -60,7 +60,7 @@ function Queue({ onChanged }) {
           <div key={`${item.targetType}-${item.targetId}`} className="card flex flex-wrap items-center gap-4 p-4">
             <div className="min-w-0 flex-1 text-sm">
               <p className="font-semibold">
-                {item.targetType} #{item.targetId} {to && <Link to={to} className="ml-1 text-violet-brand">open ↗</Link>}
+                {item.targetType} #{item.targetId} {to && <Link to={to} className="ml-1 text-accent hover:underline">open</Link>}
               </p>
               <p className="text-zinc-500">Owner <UserName userId={item.targetOwnerId} /> · {item.openReports} report{item.openReports > 1 ? "s" : ""} · {item.reasons.join(", ").toLowerCase()} · first {timeAgo(item.firstReportedAt)} ago</p>
             </div>

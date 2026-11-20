@@ -64,7 +64,7 @@ export default function App() {
           <Route path="/notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
           <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
           <Route path="/admin" element={<RequireAuth admin><Admin /></RequireAuth>} />
-          <Route path="*" element={<div className="py-20 text-center"><h1 className="text-2xl font-bold">Page not found</h1></div>} />
+          <Route path="*" element={<div className="py-20 text-center"><h1 className="font-serif text-3xl font-semibold tracking-tight">Page not found</h1></div>} />
         </Route>
       </Routes>
     </Suspense>

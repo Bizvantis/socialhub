@@ -1,17 +1,17 @@
-# Public demo on a single Oracle Cloud "Always Free" Ampere VM (4 OCPU / 24 GB, arm64):
-#   docker compose -f docker-compose.yml -f docker-compose.full.yml -f docker-compose.oracle.yml up -d --build
+# Public demo on a single Linux VM (Azure, Oracle Cloud, any provider), x64 or arm64:
+#   docker compose --env-file .env -f docker-compose.yml -f docker-compose.full.yml -f docker-compose.vm.yml up -d --build
+# infra/vm/setup-server.sh writes .env and picks memory limits from the VM's RAM.
 #
 # Differences from docker-compose.prod.yml (AWS):
-#  - media stays in SeaweedFS on the VM; browsers reach it at https://media.<SITE_DOMAIN>
+#  - media stays in SeaweedFS on the VM; browsers reach it at https://MEDIA_DOMAIN
 #    (pre-signed URLs are signed for that host; Nginx forwards it unchanged);
-#  - images are built on the VM itself (arm64), from jars built anywhere;
-#  - HTTPS for both hostnames with one Let's Encrypt certificate (see docs/runbooks/oracle.md);
-#  - more memory per JVM, since the free VM has 24 GB;
+#  - images are built on the VM itself, from jars built there in a Maven container;
+#  - HTTPS for both hostnames with one Let's Encrypt certificate (docs/runbooks/vm.md);
 #  - the web app shows a "demo data" note and a one-click demo login.
 # Only ports 80 and 443 are published. Grafana/Prometheus: SSH tunnel to 127.0.0.1.
 
 x-jvm: &jvm
-  mem_limit: 768m
+  mem_limit: ${JVM_MEM_LIMIT:-420m}
 
 services:
   mysql:         { ports: !reset [] }
@@ -23,7 +23,7 @@ services:
   elasticsearch:
     ports: !reset []
     environment:
-      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+      ES_JAVA_OPTS: "-Xms${ES_HEAP:-512m} -Xmx${ES_HEAP:-512m}"
 
   config-server:        *jvm
   eureka-server:        *jvm
@@ -39,7 +39,7 @@ services:
   moderation-service:   *jvm
   api-gateway:          *jvm
   video-worker:
-    mem_limit: 1536m          # ffmpeg runs inside this container
+    mem_limit: ${WORKER_MEM_LIMIT:-1g}     # ffmpeg runs inside this container
 
   web:
     build:
@@ -49,6 +49,7 @@ services:
         VITE_DEMO_NOTICE: "1"
     environment:
       SITE_DOMAIN: ${SITE_DOMAIN}
+      MEDIA_DOMAIN: ${MEDIA_DOMAIN}
     ports: !override
       - "80:80"
       - "443:443"

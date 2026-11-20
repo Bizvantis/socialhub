@@ -10,7 +10,7 @@ export default function Library() {
   const [tab, setTab] = useState("history");
   return (
     <div className="grid gap-5">
-      <h1 className="text-2xl font-bold">Library</h1>
+      <h1 className="font-serif text-3xl font-semibold tracking-tight">Library</h1>
       <Tabs value={tab} onChange={setTab} tabs={[
         { value: "history", label: "History" }, { value: "later", label: "Watch later" },
         { value: "playlists", label: "Playlists" }, { value: "saved", label: "Saved" },
@@ -27,7 +27,7 @@ function History() {
   const h = useQuery(() => LibraryApi.history(), []);
   if (h.loading) return <Spinner />;
   if (h.error) return <ErrorBox error={h.error} onRetry={h.reload} />;
-  if (!h.data.length) return <EmptyState icon="🕘" title="No watch history">Videos you watch will appear here.</EmptyState>;
+  if (!h.data.length) return <EmptyState icon="clock" title="No watch history">Videos you watch will appear here.</EmptyState>;
   return (
     <div className="grid gap-4">
       <button className="btn-secondary justify-self-end" onClick={async () => { if (window.confirm("Clear all watch history?")) { await LibraryApi.clearHistory(); h.reload(); } }}>Clear history</button>
@@ -44,7 +44,7 @@ function History() {
 function WatchLater() {
   const w = useQuery(() => LibraryApi.watchLater(), []);
   if (w.loading) return <Spinner />;
-  if (!w.data?.length) return <EmptyState icon="⏱" title="Nothing saved for later" />;
+  if (!w.data?.length) return <EmptyState icon="clock" title="Nothing saved for later" />;
   return <div className="grid gap-4">{w.data.map((i) => (
     <div key={i.video.id} className="flex items-center gap-3">
       <div className="flex-1"><VideoCard video={i.video} compactLayout /></div>
@@ -69,7 +69,7 @@ function Playlists() {
         <input className="input" placeholder="New playlist" value={title} onChange={(e) => setTitle(e.target.value)} />
         <button className="btn-primary">Create</button>
       </form>
-      {p.data?.content?.length === 0 && <EmptyState icon="🎵" title="No playlists yet" />}
+      {p.data?.content?.length === 0 && <EmptyState icon="music" title="No playlists yet" />}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {p.data?.content?.map((pl) => (
           <Link key={pl.id} to={`/playlist/${pl.id}`} className="card p-4 hover:shadow-md">
@@ -91,7 +91,7 @@ function Saved() {
     return { posts: posts.filter(Boolean), videos: videos.filter(Boolean) };
   }, []);
   if (saved.loading) return <Spinner />;
-  if (!saved.data.posts.length && !saved.data.videos.length) return <EmptyState icon="🔖" title="Nothing saved">Tap Save on posts and videos to keep them here.</EmptyState>;
+  if (!saved.data.posts.length && !saved.data.videos.length) return <EmptyState icon="bookmark" title="Nothing saved">Tap Save on posts and videos to keep them here.</EmptyState>;
   return (
     <div className="grid gap-6">
       {saved.data.videos.length > 0 && <div className="grid gap-4">{saved.data.videos.map((v) => <VideoCard key={v.id} video={v} compactLayout />)}</div>}

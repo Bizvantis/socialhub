@@ -3,6 +3,7 @@ import { Link, useOutletContext } from "react-router";
 import { Notifications } from "../api/endpoints";
 import { Avatar, EmptyState, LoadMore, UserName } from "../components/ui";
 import { timeAgo, useCursorList, useInView } from "../lib/hooks";
+import { Icon } from "../components/icons";
 
 const TEXT = {
   FOLLOW: "started following you",
@@ -34,14 +35,14 @@ export default function NotificationsPage() {
 
   return (
     <div className="mx-auto grid max-w-2xl gap-4">
-      <h1 className="text-2xl font-bold">Notifications</h1>
-      {list.done && list.items.length === 0 && <EmptyState icon="🔔" title="Nothing yet">Likes, comments, follows and new uploads will show up here.</EmptyState>}
+      <h1 className="font-serif text-3xl font-semibold tracking-tight">Notifications</h1>
+      {list.done && list.items.length === 0 && <EmptyState icon="bell" title="Nothing yet">Likes, comments, follows and new uploads will show up here.</EmptyState>}
       <ul className="card divide-y divide-zinc-200 dark:divide-zinc-800">
         {list.items.map((n) => {
           const to = link(n);
           const body = (
-            <div className={`flex items-start gap-3 p-4 ${n.readAt ? "" : "bg-violet-brand/5"}`}>
-              {n.actorId ? <Avatar userId={n.actorId} size={40} /> : <div className="grid h-10 w-10 place-items-center rounded-full bg-zinc-200 dark:bg-zinc-800" aria-hidden="true">🛡️</div>}
+            <div className={`flex items-start gap-3 p-4 ${n.readAt ? "" : "bg-accent-soft/60"}`}>
+              {n.actorId ? <Avatar userId={n.actorId} size={40} /> : <div className="grid h-10 w-10 place-items-center rounded-full bg-zinc-200 dark:bg-zinc-800" aria-hidden="true"><Icon name="shield" size={18} /></div>}
               <div className="min-w-0 flex-1 text-sm">
                 {n.actorId && <UserName userId={n.actorId} link={!to} className="mr-1" />}
                 <span>{TEXT[n.type] ?? "New activity"}{["LIKE", "COMMENT"].includes(n.type) ? ` ${n.targetType?.toLowerCase()}` : ""}</span>

@@ -13,7 +13,7 @@ export default function Explore() {
 
   return (
     <div className="grid gap-5">
-      <h1 className="text-2xl font-bold">Explore</h1>
+      <h1 className="font-serif text-3xl font-semibold tracking-tight">Explore</h1>
       {tags.data?.length > 0 && (
         <div className="flex flex-wrap gap-2" aria-label="Trending hashtags">
           {tags.data.map((t) => (

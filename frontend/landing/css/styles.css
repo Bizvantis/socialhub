@@ -10,15 +10,16 @@
    Defined once on :root, reused everywhere with var(). Changing a token changes the
    whole site; the dark theme below only redefines tokens, not every rule. */
 :root {
-  --bg: #ffffff;
-  --surface: #f6f6f9;
-  --text: #16161d;
-  --muted: #5f6170;
-  --border: #e4e4ec;
-  --brand-1: #7c3aed;
-  --brand-2: #ec4899;
-  --brand-3: #f97316;
-  --gradient: linear-gradient(120deg, var(--brand-1), var(--brand-2) 55%, var(--brand-3));
+  --bg: #fafaf9;
+  --surface: #f2f1ee;
+  --text: #18181b;
+  --muted: #5c5c66;
+  --border: #e4e2dd;
+  --brand-1: #2f3e8f;   /* deep ink: the single accent colour */
+  --brand-2: #2f3e8f;
+  --brand-3: #2f3e8f;
+  --ink: #18181b;
+  --gradient: var(--ink);
   --danger: #dc2626;
   --success: #16a34a;
   --radius: 14px;
@@ -29,11 +30,15 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0e0e14;
-    --surface: #17171f;
-    --text: #f2f2f7;
-    --muted: #a3a4b3;
-    --border: #2a2a36;
+    --bg: #0c0c0e;
+    --surface: #161619;
+    --text: #f4f4f5;
+    --muted: #a1a1aa;
+    --border: #27272a;
+    --brand-1: #a9b6f5;
+    --brand-2: #a9b6f5;
+    --brand-3: #a9b6f5;
+    --ink: #f4f4f5;
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   }
 }
@@ -56,7 +61,7 @@ html {
 }
 
 body {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   line-height: 1.6;
   color: var(--text);
   background: var(--bg);
@@ -745,3 +750,33 @@ a:hover {
     scroll-behavior: auto !important;
   }
 }
+
+
+/* 9. CLASSIC THEME OVERRIDES ---------------------------------------------------
+   Calm, editorial look: serif display type, solid ink buttons, no colour gradients. */
+h1, h2, .brand {
+  font-family: "Fraunces", Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.gradient-text {
+  background: none;
+  color: var(--brand-1);
+  font-style: italic;
+}
+.eyebrow { color: var(--muted); font-weight: 600; }
+.btn-primary {
+  color: var(--bg);
+  background: var(--ink);
+  box-shadow: none;
+}
+.btn-primary:hover { opacity: 0.88; }
+.btn { border-radius: 10px; }
+.step-num { background: var(--ink); color: var(--bg); font-weight: 600; }
+.cta { background: #18181b; color: #fafafa; }
+.cta .btn-primary { background: #fafafa; color: #18181b; }
+.ring { background: var(--brand-1) border-box; }
+.card-preview { background: color-mix(in srgb, var(--text) 6%, var(--surface)); }
+.player-screen { background: #18181b; }
+.auth-page { background: var(--surface); }
+:focus-visible { outline-color: var(--brand-1); }

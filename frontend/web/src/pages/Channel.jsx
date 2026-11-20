@@ -27,13 +27,13 @@ export default function Channel() {
 
   return (
     <div className="grid gap-6">
-      <div className="aspect-[6/1] overflow-hidden rounded-2xl bg-linear-to-r from-violet-brand via-brand-500 to-orange-brand">
+      <div className="aspect-[6/1] overflow-hidden rounded-xl bg-zinc-200 dark:bg-zinc-800">
         {c.bannerMediaId && <MediaImage id={c.bannerMediaId} className="h-full w-full" />}
       </div>
       <div className="flex flex-wrap items-center gap-5">
         <ChannelAvatar channel={c} size={88} />
         <div className="flex-1">
-          <h1 className="text-2xl font-bold">{c.name}</h1>
+          <h1 className="font-serif text-3xl font-semibold tracking-tight">{c.name}</h1>
           <p className="text-sm text-zinc-500">@{c.handle} · {compact(c.subscriberCount)} subscribers · {c.videoCount} videos</p>
           {c.description && <p className="mt-1 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">{c.description}</p>}
         </div>

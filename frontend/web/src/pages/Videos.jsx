@@ -20,7 +20,7 @@ export default function Videos() {
   return (
     <div className="grid gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Videos</h1>
+        <h1 className="font-serif text-3xl font-semibold tracking-tight">Videos</h1>
         <select className="input w-auto" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort videos">
           <option value="latest">Latest</option>
           <option value="popular">Most viewed</option>

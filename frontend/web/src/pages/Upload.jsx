@@ -4,6 +4,7 @@ import { Channels, Posts, Stories, Videos } from "../api/endpoints";
 import { ErrorBox, Tabs } from "../components/ui";
 import { useQuery } from "../lib/hooks";
 import { IMAGE_TYPES, VIDEO_TYPES, uploadFile } from "../lib/upload";
+import { Icon } from "../components/icons";
 
 const CATEGORIES = ["EDUCATION", "TECH", "MUSIC", "GAMING", "ENTERTAINMENT", "SPORTS", "NEWS", "TRAVEL", "FOOD", "COMEDY", "LIFESTYLE", "OTHER"];
 
@@ -12,7 +13,7 @@ export default function Upload() {
   const tab = params.get("tab") || "post";
   return (
     <div className="mx-auto grid max-w-2xl gap-5">
-      <h1 className="text-2xl font-bold">Create</h1>
+      <h1 className="font-serif text-3xl font-semibold tracking-tight">Create</h1>
       <Tabs value={tab} onChange={(t) => setParams({ tab: t })} tabs={[
         { value: "post", label: "Post" }, { value: "reel", label: "Reel" }, { value: "story", label: "Story" }, { value: "video", label: "Video" },
       ]} />
@@ -37,8 +38,8 @@ function FilePicker({ accept, multiple = false, maxMb, files, onChange, label })
   return (
     <div className="grid gap-3">
       <label onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); pick(e.dataTransfer.files); }}
-        className="grid cursor-pointer place-items-center gap-2 rounded-2xl border-2 border-dashed border-zinc-300 p-8 text-center text-sm text-zinc-500 hover:border-violet-brand dark:border-zinc-700">
-        <span className="text-3xl" aria-hidden="true">⬆️</span>
+        className="grid cursor-pointer place-items-center gap-2 rounded-xl border border-dashed border-zinc-300 bg-white p-8 text-center text-sm text-zinc-500 hover:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900">
+        <Icon name="upload" size={28} className="text-zinc-400" />
         <span>{label} - drag & drop or click</span>
         <input type="file" className="sr-only" accept={accept.join(",")} multiple={multiple} onChange={(e) => pick(e.target.files)} />
       </label>
@@ -49,7 +50,7 @@ function FilePicker({ accept, multiple = false, maxMb, files, onChange, label })
               {f.type.startsWith("image/") ? <img src={URL.createObjectURL(f)} alt="" className="h-full w-full object-cover" />
                 : <div className="grid h-full place-items-center p-1 text-center text-xs">{f.name}</div>}
               <button type="button" onClick={() => onChange(files.filter((_, j) => j !== i))} aria-label={`Remove ${f.name}`}
-                className="absolute right-1 top-1 rounded-full bg-black/60 px-1.5 text-xs text-white">✕</button>
+                className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-black/60 text-white"><Icon name="close" size={13} strokeWidth={2.25} /></button>
             </div>
           ))}
         </div>
@@ -64,7 +65,7 @@ function Progress({ value, label }) {
     <div className="grid gap-1 text-xs text-zinc-500" role="progressbar" aria-valuenow={value} aria-valuemin={0} aria-valuemax={100}>
       <span>{label} {value}%</span>
       <div className="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-        <div className="h-full bg-linear-to-r from-violet-brand to-brand-500 transition-all" style={{ width: `${value}%` }} />
+        <div className="h-full bg-zinc-900 transition-all dark:bg-white" style={{ width: `${value}%` }} />
       </div>
     </div>
   );

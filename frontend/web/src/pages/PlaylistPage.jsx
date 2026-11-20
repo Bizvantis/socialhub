@@ -15,14 +15,14 @@ export default function PlaylistPage() {
   const mine = user?.userId === playlist.ownerId;
   return (
     <div className="grid gap-5 lg:grid-cols-[300px_1fr]">
-      <div className="card h-fit bg-linear-to-br from-violet-brand/15 to-brand-500/10 p-5">
-        <h1 className="text-xl font-bold">{playlist.title}</h1>
+      <div className="card h-fit p-5">
+        <h1 className="font-serif text-2xl font-semibold tracking-tight">{playlist.title}</h1>
         <p className="mt-1 text-sm"><UserName userId={playlist.ownerId} /></p>
         <p className="text-sm text-zinc-500">{playlist.videoCount} videos · {playlist.visibility.toLowerCase()}</p>
         {playlist.description && <p className="mt-2 text-sm">{playlist.description}</p>}
       </div>
       <div className="grid content-start gap-3">
-        {videos.length === 0 && <EmptyState icon="🎵" title="This playlist is empty" />}
+        {videos.length === 0 && <EmptyState icon="music" title="This playlist is empty" />}
         {videos.map((v, i) => (
           <div key={v.id} className="flex items-center gap-3">
             <span className="w-6 text-center text-sm text-zinc-500">{i + 1}</span>

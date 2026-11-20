@@ -6,6 +6,7 @@ import { FollowButton } from "../components/cards";
 import { PostGrid } from "../components/grids";
 import { Avatar, ErrorBox, LoadMore, Modal, Spinner, UserName } from "../components/ui";
 import { compact, useCursorList, useInView, useQuery } from "../lib/hooks";
+import { Icon } from "../components/icons";
 
 export default function Profile() {
   const { username } = useParams();
@@ -26,7 +27,7 @@ export default function Profile() {
         <Avatar userId={p.userId} size={110} ring />
         <div className="grid flex-1 gap-3">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-xl font-semibold">{p.username}</h1>
+            <h1 className="font-serif text-2xl font-semibold">{p.username}</h1>
             {mine ? <Link to="/settings" className="btn-secondary">Edit profile</Link>
               : <FollowButton userId={p.userId} initiallyFollowing={p.followedByMe}
                   onChange={(f) => profile.setData({ ...p, followedByMe: f, followerCount: p.followerCount + (f ? 1 : -1) })} />}
@@ -38,7 +39,7 @@ export default function Profile() {
           <div className="text-sm">
             <p className="font-semibold">{p.displayName}</p>
             {p.bio && <p className="whitespace-pre-wrap text-zinc-600 dark:text-zinc-400">{p.bio}</p>}
-            {p.privateAccount && <p className="mt-1 text-xs text-zinc-500">🔒 Private account</p>}
+            {p.privateAccount && <p className="mt-1 inline-flex items-center gap-1 text-xs text-zinc-500"><Icon name="lock" size={13} />Private account</p>}
           </div>
         </div>
       </header>

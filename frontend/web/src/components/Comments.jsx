@@ -5,6 +5,7 @@ import { Engagement } from "../api/endpoints";
 import { timeAgo, useCursorList } from "../lib/hooks";
 import { RichText } from "./cards";
 import { Avatar, ErrorBox, Spinner, UserName } from "./ui";
+import { Icon } from "./icons";
 
 /** Comment thread for a VIDEO or POST: newest/top sorting, one level of replies. */
 export default function Comments({ type, id, ownerId }) {
@@ -105,8 +106,8 @@ function CommentItem({ comment, type, id, ownerId, onDeleted, isReply = false })
           <RichText text={c.body} />
         </div>
         <div className="mt-1 flex items-center gap-3 text-xs text-zinc-500">
-          <button onClick={toggleLike} disabled={!user} aria-pressed={c.likedByMe} className="hover:text-brand-500">
-            {c.likedByMe ? "❤️" : "🤍"} {c.likeCount || ""}
+          <button onClick={toggleLike} disabled={!user} aria-pressed={c.likedByMe} className="hover:text-heart">
+            <span className={`inline-flex items-center gap-1 ${c.likedByMe ? "text-heart" : ""}`}><Icon name="heart" size={15} filled={c.likedByMe} />{c.likeCount || ""}</span>
           </button>
           {user && <button onClick={() => setReplying(!replying)} className="font-semibold hover:text-zinc-800 dark:hover:text-zinc-200">Reply</button>}
           {canDelete && <button className="hover:text-red-500" onClick={async () => { await Engagement.deleteComment(c.id); onDeleted(); }}>Delete</button>}

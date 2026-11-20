@@ -7,6 +7,7 @@ import Comments from "../components/Comments";
 import { ErrorBox, Spinner } from "../components/ui";
 import { useQuery } from "../lib/hooks";
 import { ReportDialog } from "./Watch";
+import { Icon } from "../components/icons";
 
 export default function PostPage() {
   const { id } = useParams();
@@ -28,7 +29,7 @@ export default function PostPage() {
           <button className="btn-ghost text-red-500" onClick={async () => {
             if (window.confirm("Delete this post?")) { await Posts.remove(p.id); navigate(`/u/${user.username}`); }
           }}>Delete post</button>
-        ) : <button className="btn-ghost" onClick={() => setReport(true)}>⚑ Report</button>}
+        ) : <button className="btn-ghost" onClick={() => setReport(true)}><Icon name="flag" size={17} />Report</button>}
       </div>
       <Comments type="POST" id={p.id} ownerId={p.authorId} />
       <ReportDialog open={report} onClose={() => setReport(false)} targetType="POST" targetId={p.id} />

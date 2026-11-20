@@ -23,7 +23,7 @@ export default function SearchPage() {
     maxDuration: filters.duration === "short" ? 240 : undefined, minDuration: filters.duration === "long" ? 1200 : undefined,
   }) : Promise.resolve(null)), [q, filters.sort, filters.uploadedWithin, filters.duration]);
 
-  if (!q) return <EmptyState icon="🔍" title="Search SocialHub">Find videos, channels, people and #hashtags.</EmptyState>;
+  if (!q) return <EmptyState icon="search" title="Search SocialHub">Find videos, channels, people and #hashtags.</EmptyState>;
   if (all.loading) return <Spinner />;
   if (all.error) return <ErrorBox error={all.error} onRetry={all.reload} />;
   const r = all.data;
@@ -43,7 +43,7 @@ export default function SearchPage() {
           <option value="">Any length</option><option value="short">Under 4 minutes</option><option value="long">Over 20 minutes</option>
         </select>
       </div>
-      {nothing && <EmptyState icon="🤷" title="No results">Try different keywords. Search tolerates small typos.</EmptyState>}
+      {nothing && <EmptyState icon="search" title="No results">Try different keywords. Search tolerates small typos.</EmptyState>}
       {r.channels.items.length > 0 && (
         <Section title="Channels">
           {r.channels.items.map(({ doc }) => (

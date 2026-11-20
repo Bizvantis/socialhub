@@ -11,7 +11,7 @@ function Shell({ title, subtitle, children }) {
         <Link to="/" className="mb-5 flex items-center justify-center gap-2 text-lg font-extrabold">
           <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" className="h-9 w-9" /> SocialHub
         </Link>
-        <h1 className="text-center text-2xl font-bold">{title}</h1>
+        <h1 className="text-center font-serif text-3xl font-semibold tracking-tight">{title}</h1>
         {subtitle && <p className="mb-5 mt-1 text-center text-sm text-zinc-500">{subtitle}</p>}
         {children}
       </main>

@@ -68,7 +68,7 @@ def title_card(pid, title, channel, size=(1280, 720)):
 def text_slide(heading, lines, idx, total, size=(1280, 720)):
     w, h = size
     img = Image.new("RGB", size)
-    top, bottom = (24, 20, 58), (91, 33, 182)          # navy -> violet (brand colours)
+    top, bottom = (16, 18, 32), (40, 52, 118)          # near-black -> ink navy
     for y in range(h):
         t = y / h
         ImageDraw.Draw(img).line([(0, y), (w, y)], fill=tuple(int(a + (b - a) * t) for a, b in zip(top, bottom)))
@@ -145,7 +145,7 @@ def main():
                 slideshow(slides, out, (1280, 720), 5.0, zoom=0.0002)
         else:
             thumb = title_card(v["photos"][0], v["title"], names[v["owner"]])
-            frames = [thumb] + [cover(photo(p), 1280, 720) for p in v["photos"][1:]]
+            frames = [cover(photo(p), 1280, 720) for p in v["photos"]]   # title only on the thumbnail
             if not out.exists():
                 slideshow(frames, out, (1280, 720), 4.0)
         thumb.save(OUT / "thumbs" / f"{v['key']}.jpg", quality=88)

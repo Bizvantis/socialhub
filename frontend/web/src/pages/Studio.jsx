@@ -23,7 +23,7 @@ function CreateChannel({ onCreated }) {
       e.preventDefault();
       try { onCreated(await Channels.create(form)); } catch (err) { setError(err); }
     }}>
-      <h1 className="text-xl font-bold">Create your channel</h1>
+      <h1 className="font-serif text-2xl font-semibold tracking-tight">Create your channel</h1>
       <p className="text-sm text-zinc-500">You need a channel to publish long-form videos. One channel per account.</p>
       <label className="grid gap-1 text-sm font-semibold">Handle
         <input className="input font-normal" required pattern="[A-Za-z0-9_.]{3,30}" placeholder="mychannel" value={form.handle} onChange={(e) => setForm({ ...form, handle: e.target.value })} />
@@ -59,7 +59,7 @@ function Manage({ channel, onChange }) {
     <div className="grid gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Channel studio</h1>
+          <h1 className="font-serif text-3xl font-semibold tracking-tight">Channel studio</h1>
           <Link to={`/c/${channel.handle}`} className="text-sm text-violet-brand">@{channel.handle} · {compact(channel.subscriberCount)} subscribers</Link>
         </div>
         <div className="flex flex-wrap gap-2">

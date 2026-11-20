@@ -10,7 +10,7 @@ export default function Hashtag() {
   const sentinel = useInView(() => list.loadMore());
   return (
     <div className="grid gap-5">
-      <h1 className="text-2xl font-bold">#{tag}</h1>
+      <h1 className="font-serif text-3xl font-semibold tracking-tight">#{tag}</h1>
       {(list.items.length > 0 || list.done) && <PostGrid posts={list.items} empty={`No public posts with #${tag} yet`} />}
       <LoadMore list={list} sentinelRef={sentinel} />
     </div>

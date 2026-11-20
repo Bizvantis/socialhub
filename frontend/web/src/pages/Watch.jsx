@@ -7,6 +7,7 @@ import Comments from "../components/Comments";
 import HlsPlayer from "../components/HlsPlayer";
 import { ErrorBox, Modal, Spinner } from "../components/ui";
 import { compact, timeAgo, useMedia, useQuery } from "../lib/hooks";
+import { Icon } from "../components/icons";
 
 export default function Watch() {
   const { id } = useParams();
@@ -36,7 +37,7 @@ export default function Watch() {
           <HlsPlayer src={media.playbackUrl} poster={media.thumbnailUrl} startAt={v.resumeAtSeconds ?? 0} onProgress={onProgress} />
         ) : <div className="aspect-video animate-pulse rounded-2xl bg-zinc-800" />}
 
-        <h1 className="text-xl font-bold">{v.title}</h1>
+        <h1 className="text-xl font-semibold leading-snug">{v.title}</h1>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <ChannelRow channel={v.channel} />
           <ActionBar type="VIDEO" id={v.id} onComment={() => document.getElementById("comments")?.scrollIntoView({ behavior: "smooth" })} />
@@ -48,7 +49,7 @@ export default function Watch() {
             {v.visibility !== "PUBLIC" && <span className="ml-2 rounded bg-zinc-200 px-1.5 text-xs dark:bg-zinc-800">{v.visibility.toLowerCase()}</span>}
           </p>
           <div className={showMore ? "" : "line-clamp-3"}><RichText text={v.description} /></div>
-          {v.tags?.length > 0 && <p className="mt-2 flex flex-wrap gap-2">{v.tags.map((t) => <span key={t} className="text-violet-brand">#{t}</span>)}</p>}
+          {v.tags?.length > 0 && <p className="mt-2 flex flex-wrap gap-2">{v.tags.map((t) => <span key={t} className="text-sm font-medium text-accent">#{t}</span>)}</p>}
           {v.description?.length > 200 && <button className="mt-1 font-semibold" onClick={() => setShowMore(!showMore)}>{showMore ? "Show less" : "…more"}</button>}
         </div>
 
@@ -106,9 +107,9 @@ function ExtraActions({ video }) {
       <button className="btn-secondary" aria-pressed={later} onClick={async () => {
         await (later ? Library.removeWatchLater(video.id) : Library.addWatchLater(video.id));
         setLater(!later);
-      }}>{later ? "✓ Watch later" : "⏱ Watch later"}</button>
-      <button className="btn-secondary" onClick={() => setPlaylistOpen(true)}>➕ Save to playlist</button>
-      <button className="btn-ghost" onClick={() => setReportOpen(true)}>⚑ Report</button>
+      }}><Icon name={later ? "check" : "clock"} size={17} />Watch later</button>
+      <button className="btn-secondary" onClick={() => setPlaylistOpen(true)}><Icon name="plus" size={17} />Save to playlist</button>
+      <button className="btn-ghost" onClick={() => setReportOpen(true)}><Icon name="flag" size={17} />Report</button>
       <SaveToPlaylist open={playlistOpen} onClose={() => setPlaylistOpen(false)} videoId={video.id} />
       <ReportDialog open={reportOpen} onClose={() => setReportOpen(false)} targetType="VIDEO" targetId={video.id} />
     </div>

@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router";
 import { useMedia, useUsers } from "../lib/hooks";
+import { Icon } from "./icons";
 
 export function Spinner({ className = "" }) {
   return (
@@ -11,11 +12,13 @@ export function Spinner({ className = "" }) {
   );
 }
 
-export function EmptyState({ icon = "✨", title, children }) {
+export function EmptyState({ icon = "sparkle", title, children }) {
   return (
     <div className="flex flex-col items-center gap-2 px-6 py-16 text-center">
-      <div className="text-4xl" aria-hidden="true">{icon}</div>
-      <h3 className="text-lg font-semibold">{title}</h3>
+      <div className="mb-1 grid h-14 w-14 place-items-center rounded-full border border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+        <Icon name={icon} size={24} />
+      </div>
+      <h3 className="font-serif text-xl font-semibold">{title}</h3>
       {children && <div className="max-w-sm text-sm text-zinc-500">{children}</div>}
     </div>
   );
@@ -49,12 +52,12 @@ export function Avatar({ userId, size = 40, ring = false, className = "" }) {
       id={u?.avatarMediaId}
       alt=""
       className="h-full w-full rounded-full"
-      fallback={<div className="grid h-full w-full place-items-center rounded-full bg-linear-to-br from-violet-brand to-brand-500 font-semibold text-white" style={{ fontSize: size * 0.42 }}>{initials}</div>}
+      fallback={<div className="grid h-full w-full place-items-center rounded-full bg-zinc-200 font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300" style={{ fontSize: size * 0.42 }}>{initials}</div>}
     />
   );
   return (
     <div className={`shrink-0 ${ring ? "gradient-ring" : ""} ${className}`} style={{ width: size, height: size }}>
-      <div className={`h-full w-full overflow-hidden rounded-full ${ring ? "border-2 border-white dark:border-zinc-950" : ""}`}>{inner}</div>
+      <div className={`h-full w-full overflow-hidden rounded-full ${ring ? "border-2 border-white bg-white dark:border-zinc-950 dark:bg-zinc-950" : ""}`}>{inner}</div>
     </div>
   );
 }
@@ -78,10 +81,10 @@ export function Modal({ open, onClose, title, children, wide = false }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onMouseDown={onClose} role="dialog" aria-modal="true" aria-label={title}>
-      <div className={`card max-h-[90vh] w-full overflow-auto p-5 ${wide ? "max-w-3xl" : "max-w-md"}`} onMouseDown={(e) => e.stopPropagation()}>
+      <div className={`card max-h-[90vh] w-full overflow-auto p-6 shadow-2xl ${wide ? "max-w-3xl" : "max-w-md"}`} onMouseDown={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{title}</h2>
-          <button className="btn-ghost px-2" onClick={onClose} aria-label="Close">✕</button>
+          <h2 className="font-serif text-xl font-semibold">{title}</h2>
+          <button className="btn-ghost px-2" onClick={onClose} aria-label="Close"><Icon name="close" size={18} /></button>
         </div>
         {children}
       </div>
@@ -94,7 +97,7 @@ export function Tabs({ tabs, value, onChange }) {
     <div className="flex gap-1 overflow-x-auto border-b border-zinc-200 dark:border-zinc-800" role="tablist">
       {tabs.map((t) => (
         <button key={t.value} role="tab" aria-selected={value === t.value} onClick={() => onChange(t.value)}
-          className={`whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-semibold transition ${value === t.value ? "border-brand-500 text-zinc-900 dark:text-white" : "border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"}`}>
+          className={`whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-medium transition ${value === t.value ? "border-zinc-900 text-zinc-900 dark:border-white dark:text-white" : "border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"}`}>
           {t.label}
         </button>
       ))}

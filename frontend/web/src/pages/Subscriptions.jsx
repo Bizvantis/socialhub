@@ -14,7 +14,7 @@ export default function Subscriptions() {
 
   return (
     <div className="grid gap-6">
-      <h1 className="text-2xl font-bold">Subscriptions</h1>
+      <h1 className="font-serif text-3xl font-semibold tracking-tight">Subscriptions</h1>
       {subs.length > 0 && (
         <div className="flex gap-5 overflow-x-auto pb-2">
           {subs.map((c) => (
@@ -25,7 +25,7 @@ export default function Subscriptions() {
         </div>
       )}
       {list.done && list.items.length === 0
-        ? <EmptyState icon="📺" title="No videos from your subscriptions">Subscribe to channels and their new videos will land here.</EmptyState>
+        ? <EmptyState icon="subscriptions" title="No videos from your subscriptions">Subscribe to channels and their new videos will land here.</EmptyState>
         : <VideoGrid videos={list.items.map(feedItemToVideo)} />}
       <LoadMore list={list} sentinelRef={sentinel} />
     </div>
