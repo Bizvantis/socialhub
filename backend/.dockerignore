@@ -1,0 +1,12 @@
+# Only the built jars are needed in the image build context.
+**/src
+**/.mvn
+**/mvnw
+**/mvnw.cmd
+**/*.log
+**/target/classes
+**/target/test-classes
+**/target/generated-*
+**/target/maven-*
+**/target/surefire-reports
+**/target/*.original

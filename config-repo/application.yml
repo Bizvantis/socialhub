@@ -23,6 +23,10 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+    distribution:
+      # Publish latency histograms so Prometheus can compute p95/p99 across instances.
+      percentiles-histogram:
+        http.server.requests: true
 
 spring:
   jpa:

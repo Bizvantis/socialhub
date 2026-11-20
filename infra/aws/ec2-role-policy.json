@@ -1,0 +1,30 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "MediaObjects",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::REPLACE_WITH_BUCKET/*"
+    },
+    {
+      "Sid": "MediaBucketListing",
+      "Effect": "Allow",
+      "Action": ["s3:ListBucket"],
+      "Resource": "arn:aws:s3:::REPLACE_WITH_BUCKET"
+    },
+    {
+      "Sid": "ReadProdSecrets",
+      "Effect": "Allow",
+      "Action": ["ssm:GetParametersByPath", "ssm:GetParameter"],
+      "Resource": "arn:aws:ssm:*:REPLACE_WITH_ACCOUNT_ID:parameter/socialhub/prod/*"
+    },
+    {
+      "Sid": "DecryptSecrets",
+      "Effect": "Allow",
+      "Action": ["kms:Decrypt"],
+      "Resource": "*",
+      "Condition": { "StringEquals": { "kms:ViaService": "ssm.*.amazonaws.com" } }
+    }
+  ]
+}

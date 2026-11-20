@@ -1,0 +1,17 @@
+# Run Jenkins locally to try the pipeline:
+#   docker compose -f infra/jenkins/docker-compose.jenkins.yml up -d
+#   open http://localhost:8095 (port chosen to avoid the SocialHub services); initial password:
+#   docker exec socialhub-jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+# Then create a "Pipeline from SCM" job pointing at this repository (Jenkinsfile at the root).
+services:
+  jenkins:
+    image: jenkins/jenkins:lts-jdk21
+    container_name: socialhub-jenkins
+    user: root   # lets the pipeline use the host Docker daemon through the mounted socket
+    ports:
+      - "8095:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+volumes:
+  jenkins_home:
