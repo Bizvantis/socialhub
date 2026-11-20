@@ -20,13 +20,15 @@ public class ProfileService {
     private final FollowRepository follows;
     private final ProfileCache cache;
     private final FollowCache followCache;
+    private final UserEvents events;
 
     public ProfileService(ProfileRepository profiles, FollowRepository follows,
-                          ProfileCache cache, FollowCache followCache) {
+                          ProfileCache cache, FollowCache followCache, UserEvents events) {
         this.profiles = profiles;
         this.follows = follows;
         this.cache = cache;
         this.followCache = followCache;
+        this.events = events;
     }
 
     @Transactional
@@ -53,6 +55,7 @@ public class ProfileService {
         if (r.bio() != null) p.setBio(r.bio().trim());
         if (r.privateAccount() != null) p.setPrivateAccount(r.privateAccount());
 
+        events.profileUpdated(p);
         evictAfterCommit(userId);
 
         return ProfileMapper.toResponse(p, false);
@@ -75,6 +78,7 @@ public class ProfileService {
         profiles.adjustFollowing(me, 1);
         profiles.adjustFollowers(target, 1);
 
+        events.followed(me, target, true);
         evictAfterCommit(me, target);
         evictEdgeAfterCommit(me, target);
     }
@@ -87,6 +91,7 @@ public class ProfileService {
             profiles.adjustFollowing(me, -1);
             profiles.adjustFollowers(target, -1);
 
+            events.followed(me, target, false);
             evictAfterCommit(me, target);
             evictEdgeAfterCommit(me, target);
         }
@@ -129,7 +134,9 @@ public class ProfileService {
             p.setUserId(userId);
             p.setUsername(username);
             p.setDisplayName(username);
-            return profiles.save(p);
+            Profile saved = profiles.save(p);
+            events.profileUpdated(saved); // new profile: index it for search
+            return saved;
         });
     }
 

@@ -34,6 +34,9 @@ class ProfileServiceTest {
     @Mock
     private FollowCache followCache;
 
+    @Mock
+    private UserEvents events;
+
     @InjectMocks
     private ProfileService profileService;
 

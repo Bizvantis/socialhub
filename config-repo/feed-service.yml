@@ -1,0 +1,22 @@
+server:
+  port: 8087
+
+spring:
+  data:
+    redis:
+      host: ${app.redis.host}
+      port: 6379
+      password: ${REDIS_PASSWORD:change_me}
+  kafka:
+    consumer:
+      group-id: feed-service
+
+app:
+  feed:
+    # Authors with more followers than this are NOT fanned out on write; their items are
+    # pulled and merged at read time (hybrid fan-out). Lower it locally to exercise that path.
+    celebrity-threshold: ${FEED_CELEBRITY_THRESHOLD:1000}
+    max-feed-size: 800          # entries kept per user feed (ZSET trimmed on write)
+    timeline-size: 500          # entries kept per author/channel timeline
+    backfill-on-follow: 50      # newest items copied into a feed when you follow someone
+    item-ttl: 14d               # cached item snapshots

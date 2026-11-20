@@ -2,22 +2,21 @@ server:
   port: 8082
 
 spring:
-
   datasource:
     url: jdbc:mysql://${app.mysql.host}:3306/user_db?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
     username: user_user
-    password: user_dev_pw
+    password: ${USER_DB_PASSWORD:user_dev_pw}
 
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    open-in-view: false
-  
   data:
     redis:
-      host: localhost
+      host: ${app.redis.host}
       port: 6379
       password: ${REDIS_PASSWORD:change_me}
 
   flyway:
     enabled: true
+
+  # user-service keeps its own ApiResponse/GlobalExceptionHandler from Phase 2;
+  # use only the eventing (outbox) and client parts of the shared library.
+  autoconfigure:
+    exclude: com.socialhub.common.web.CommonWebAutoConfiguration
