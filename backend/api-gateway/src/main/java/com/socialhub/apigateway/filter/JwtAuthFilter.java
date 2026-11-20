@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
@@ -45,8 +46,11 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     private final List<String> publicGetPrefixes;
 
     private final List<PathPattern> optionalAuthPost;
+    private final ReactiveStringRedisTemplate redis;
 
-    public JwtAuthFilter(@Value("${app.jwt.secret}") String secret, GatewayProperties props) {
+    public JwtAuthFilter(@Value("${app.jwt.secret}") String secret, GatewayProperties props,
+                         ReactiveStringRedisTemplate redis) {
+        this.redis = redis;
         this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.publicGetPrefixes = props.publicGetPrefixes();
         PathPatternParser parser = new PathPatternParser();
@@ -106,7 +110,13 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
                 h.set("X-Username", username);
                 h.set("X-User-Roles", roles);
             });
-            return chain.filter(exchange.mutate().request(builder.build()).build());
+            // Suspended accounts are cut off immediately, even with a still-valid access token
+            // (auth-service sets this marker for the token lifetime when moderation suspends a user).
+            return redis.hasKey("auth:suspended:" + userId)
+                    .onErrorReturn(false) // Redis outage: fail open on this check only (JWT is still verified)
+                    .flatMap(suspended -> suspended
+                            ? reject(exchange, HttpStatus.FORBIDDEN, "Account suspended")
+                            : chain.filter(exchange.mutate().request(builder.build()).build()));
         } catch (JwtException | IllegalArgumentException ex) {
             return reject(exchange, HttpStatus.UNAUTHORIZED, "Invalid or expired token");
         }

@@ -6,6 +6,8 @@ import com.socialhub.authservice.entity.*;
 import com.socialhub.authservice.exception.ApiException;
 import com.socialhub.authservice.repository.*;
 import com.socialhub.authservice.security.JwtService;
+import com.socialhub.common.event.Topics;
+import com.socialhub.common.outbox.OutboxWriter;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -31,6 +34,8 @@ public class AuthService {
     private final PasswordEncoder encoder;
     private final JwtService jwt;
     private final long refreshTtlDays;
+    private final OutboxWriter outbox;
+    private final AccountModeration accounts;
 
     private final SecureRandom random = new SecureRandom();
 
@@ -40,7 +45,9 @@ public class AuthService {
             RefreshTokenRepository refreshTokens,
             PasswordEncoder encoder,
             JwtService jwt,
-            @Value("${app.jwt.refresh-ttl-days}") long refreshTtlDays) {
+            @Value("${app.jwt.refresh-ttl-days}") long refreshTtlDays,
+            OutboxWriter outbox,
+            AccountModeration accounts) {
 
         this.users = users;
         this.roles = roles;
@@ -48,6 +55,8 @@ public class AuthService {
         this.encoder = encoder;
         this.jwt = jwt;
         this.refreshTtlDays = refreshTtlDays;
+        this.outbox = outbox;
+        this.accounts = accounts;
     }
 
     // REGISTER
@@ -83,6 +92,12 @@ public class AuthService {
         );
 
         users.save(u);
+        accounts.grantAdminIfListed(email);
+
+        // Other services (notifications: email delivery) learn about the account from this event,
+        // written in the same transaction as the user row (transactional outbox).
+        outbox.publish(Topics.ACCOUNT_EVENTS, "USER_REGISTERED", u.getId(),
+                Map.of("userId", u.getId(), "email", u.getEmail(), "username", u.getUsername()));
 
         return new RegisteredUser(
             u.getId(),

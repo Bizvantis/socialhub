@@ -1,4 +1,3 @@
-
 server:
   port: 8081
 
@@ -6,31 +5,28 @@ spring:
   datasource:
     url: jdbc:mysql://${app.mysql.host}:3306/auth_db?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
     username: auth_user
-    password: auth_dev_pw
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    open-in-view: false
+    password: ${AUTH_DB_PASSWORD:auth_dev_pw}
 
   flyway:
     enabled: true
 
   data:
     redis:
-      host: localhost
+      host: ${app.redis.host}
       port: 6379
       password: ${REDIS_PASSWORD:change_me}
 
-eureka:
-  instance:
-    hostname: localhost
-    prefer-ip-address: false
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
+  # auth-service keeps its own ApiResponse/GlobalExceptionHandler from Phase 2;
+  # it uses only the eventing (outbox, idempotency) and queue parts of the shared library.
+  autoconfigure:
+    exclude: com.socialhub.common.web.CommonWebAutoConfiguration
 
 app:
   jwt:
     access-ttl-minutes: 15
     refresh-ttl-days: 7
+  password-reset:
+    ttl: 30m
+  web-base-url: ${WEB_BASE_URL:http://localhost:5173}
+  # Comma-separated emails that receive the ADMIN role (moderation dashboard).
+  bootstrap-admins: ${BOOTSTRAP_ADMINS:}

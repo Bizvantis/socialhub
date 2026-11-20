@@ -1,0 +1,32 @@
+server:
+  port: 8089
+
+spring:
+  datasource:
+    url: jdbc:mysql://${app.mysql.host}:3306/notification_db?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+    username: notification_user
+    password: ${NOTIFICATION_DB_PASSWORD:notification_dev_pw}
+  flyway:
+    enabled: true
+  data:
+    redis:
+      host: ${app.redis.host}
+      port: 6379
+      password: ${REDIS_PASSWORD:change_me}
+  kafka:
+    consumer:
+      group-id: notification-service
+  # Local dev: Mailpit catches every email (UI http://localhost:8025). Production: SES/SMTP relay.
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASSWORD:}
+
+app:
+  mail:
+    from: "SocialHub <no-reply@socialhub.local>"
+    web-base-url: ${WEB_BASE_URL:http://localhost:5173}
+  notifications:
+    # Producers never wait for us; nobody should get 100k emails because a celebrity posted.
+    email-types: FOLLOW,COMMENT,REPLY,MENTION,CONTENT_REMOVED

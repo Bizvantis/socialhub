@@ -45,7 +45,8 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/actuator/health",
                     "/actuator/health/**",
-                    "/actuator/info"
+                    "/actuator/info",
+                    "/actuator/prometheus"
                 ).permitAll()
 
                 // Block everything else for now
