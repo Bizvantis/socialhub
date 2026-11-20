@@ -12,12 +12,12 @@ SeaweedFS on the same VM. Cost: $0. For the AWS variant see [aws.md](aws.md).
 The hostname needs no DNS: `<ip-with-dashes>.sslip.io` resolves to the IP
 (e.g. `140-238-10-20.sslip.io`), and `media.<that>` serves the S3 endpoint.
 
-## 2. Ship the code and build artifacts
+## 2. Ship the code and demo media
+The jars are built on the VM (in a Maven container), so only sources and media are uploaded.
 ```bash
-mvn -f backend/pom.xml package                    # jars (CPU-independent)
-python tools/seed/fetch_assets.py && python tools/seed/make_media.py   # demo media
-git archive --format=tar HEAD > socialhub.tar
-tar rf socialhub.tar backend/*/target/*-0.0.1-SNAPSHOT.jar tools/seed/assets
+python tools/seed/fetch_assets.py && python tools/seed/make_media.py   # demo media, once
+git -c core.autocrlf=false archive --format=tar HEAD > socialhub.tar
+tar rf socialhub.tar tools/seed/assets
 scp socialhub.tar ubuntu@<ip>:/tmp/ && ssh ubuntu@<ip> 'sudo mkdir -p /opt/socialhub && sudo chown ubuntu /opt/socialhub && tar xf /tmp/socialhub.tar -C /opt/socialhub'
 ```
 

@@ -69,6 +69,11 @@ printf '#!/bin/sh\ndocker stop socialhub-web\n'  | sudo tee /etc/letsencrypt/ren
 printf '#!/bin/sh\ndocker start socialhub-web\n' | sudo tee /etc/letsencrypt/renewal-hooks/post/start-web.sh >/dev/null
 sudo chmod +x /etc/letsencrypt/renewal-hooks/pre/stop-web.sh /etc/letsencrypt/renewal-hooks/post/start-web.sh
 
+echo "== backend jars (built on the VM in a throwaway Maven container; tests already ran in CI/locally)"
+if ls backend/*/pom.xml >/dev/null && [ "$(ls backend/*/target/*-0.0.1-SNAPSHOT.jar 2>/dev/null | wc -l)" -lt 14 ]; then
+  sudo docker run --rm -v "$APP/backend":/src -v socialhub-m2:/root/.m2 -w /src     maven:3.9-eclipse-temurin-21 mvn -B -q -DskipTests package
+fi
+
 echo "== build and start ($(nproc) CPUs, $(free -g | awk '/Mem/{print $2}') GB RAM)"
 COMPOSE="sudo docker compose --env-file .env -f docker-compose.yml -f docker-compose.full.yml -f docker-compose.oracle.yml"
 $COMPOSE build
